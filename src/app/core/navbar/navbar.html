@@ -1,8 +1,12 @@
 <nav class="sidebar">
   <img src="assets/logo.png" alt="MaxiGestión" />
-  <button class="btn">Inicio</button>
-  <button class="btn">Servicios</button>
-  <button class="btn">Acerca de</button>
-  <button class="btn">Contacto</button>
-  <button class="btn" (click)="navigateToLogin()">Iniciar Sesión</button>
+  <button class="btn" (click)="openLoginModal()">INGRESAR</button>
+  <button class="btn">CATÁLOGO</button>
+  <button class="btn">ACERCA DE</button>
+  <button class="btn">CONTACTO</button>
 </nav>
+
+<app-modal-login 
+  *ngIf="showLoginModal" 
+  (closeModal)="closeLoginModal()">
+</app-modal-login>

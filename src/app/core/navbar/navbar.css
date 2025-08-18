@@ -14,17 +14,33 @@
     margin-bottom: 30px;
 }
 
+/* BOTONES */
 .sidebar .btn {
     width: 100%;
     margin-bottom: 15px;
     background-color: #000;
-    border-left: 5px solid #f3c623;
-    color: white;
     border: none;
+    border-radius: 5px;
     padding: 12px 16px;
-    text-align: left;
+    color: white;
+    font-weight: bold;
     cursor: pointer;
+    text-align: center;   /* Centra el texto */
+    display: block;
+    position: relative;
     transition: background-color 0.3s ease;
+}
+
+/* Línea amarilla a la izquierda */
+.sidebar .btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 5px;
+    background-color: #f3c623;
+    border-radius: 5px 0 0 5px;
 }
 
 .sidebar .btn:hover {

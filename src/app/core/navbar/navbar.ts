@@ -1,16 +1,22 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ModalLogin } from '../modal-login/modal-login';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, ModalLogin],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
 export class Navbar {
-  constructor(private router: Router) {}
+  showLoginModal = false;
 
-  navigateToLogin() {
-    this.router.navigate(['/login']);
+  openLoginModal() {
+    this.showLoginModal = true;
+  }
+
+  closeLoginModal() {
+    this.showLoginModal = false;
   }
 }
