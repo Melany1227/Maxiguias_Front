@@ -1,4 +1,47 @@
-.main {
-  margin-left: 220px;
-  padding: 20px;
+/* Reset básico */
+html, body { height: 100%; }
+body { margin: 0; font-family: Arial, sans-serif; }
+
+/* Layout base */
+.layout { display: flex; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;                 /* <— ANCHO DEL SIDEBAR */
+  background-color: #2d2e2b;
+  padding: 20px 15px;
+  position: fixed;              /* fijo como tu diseño */
+  inset: 0 auto 0 0;            /* top:0; left:0; bottom:0 */
 }
+.sidebar img { width: 100%; margin-bottom: 30px; }
+.sidebar .btn {
+  width: 100%;
+  margin-bottom: 15px;
+  background-color: #000;
+  border-left: 5px solid #f3c623;
+  color: #fff;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.sidebar .btn:hover { background-color: #333; }
+
+/* ===== ÁREA DE CONTENIDO ===== */
+.main {
+  margin-left: 240px;           /* <— reserva espacio para el sidebar */
+  width: calc(100% - 240px);    /* evita que el fondo se meta bajo el sidebar */
+  min-height: 100vh;
+  display: flex;                /* centrado del login */
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #edf1f7;    /* fondo claro del área de contenido */
+}
+
+/* RESPONSIVE: sidebar apilado arriba si quieres más adelante
+@media (max-width: 900px) {
+  .sidebar{ position: static; width: 100%; height: auto; display:flex; gap:12px; align-items:center;}
+  .main{ margin-left:0; width:100%; }
+}
+*/
