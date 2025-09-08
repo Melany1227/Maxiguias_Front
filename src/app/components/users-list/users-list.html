@@ -1,0 +1,15 @@
+<div class="users-container">
+  <div class="header">
+    <h2>Lista de Usuarios</h2>
+    <button routerLink="/user-create" class="btn btn-outline-success">Nuevo Usuario</button>
+  </div>
+  
+  <app-table 
+    [data]="users"
+    [columns]="columns"
+    [actions]="actions"
+    [loading]="loading"
+    emptyMessage="No hay usuarios registrados"
+    (rowClick)="onRowClick($event)">
+  </app-table>
+</div>

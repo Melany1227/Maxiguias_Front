@@ -1,23 +1,33 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ModalLogin } from '../modal-login/modal-login';
+import { Component, AfterViewInit, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, ModalLogin, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
-export class Navbar {
-  showLoginModal = false;
+export class Navbar implements AfterViewInit {
+  isCollapsed = true;
 
-  openLoginModal() {
-    this.showLoginModal = true;
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.style.setProperty('--sidebar-w', '56px');
+    }
   }
 
-  closeLoginModal() {
-    this.showLoginModal = false;
+  toggle() {
+    this.isCollapsed = !this.isCollapsed;
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.style.setProperty(
+        '--sidebar-w',
+        this.isCollapsed ? '56px' : '220px'
+      );
+    }
   }
+  
 }

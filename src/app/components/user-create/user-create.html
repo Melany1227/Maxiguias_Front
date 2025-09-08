@@ -1,0 +1,80 @@
+<div class="main-content">
+    <div class="form-container">
+
+        <h4 class="form-title">
+            <i class="fa-solid fa-id-card"></i> DATOS PERSONALES
+        </h4>    
+
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-id-badge"></i> Documento *
+                </label>
+                <input type="number" formControlName="documento" class="form-control" required>
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Primer Apellido
+                </label>
+                <input type="text" formControlName="primerApellido" class="form-control">
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-location-dot"></i> Dirección *
+                </label>
+                <input type="text" formControlName="direccion" class="form-control" required>
+                
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Nombre de Usuario
+                </label>
+                <input type="text" formControlName="nombreUsuario" class="form-control">
+
+               <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Tipo de Usuario *
+                </label>
+                <select formControlName="tipoUsuario" class="form-control" required>
+                    <option value="">Seleccione</option>
+                    <option *ngFor="let tipo of tiposUsuario" [value]="tipo.id">{{tipo.nombre}}</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Nombre *
+                </label>
+                <input type="text" formControlName="nombre" class="form-control" required>
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Segundo Apellido
+                </label>
+                <input type="text" formControlName="segundoApellido" class="form-control">
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-phone"></i> Teléfono *
+                </label>
+                <input type="number" formControlName="telefono" class="form-control" required>
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Contraseña 
+                </label>
+                <input type="password" formControlName="contrasena" class="form-control">
+
+                <label class="form-icon-label">
+                    <i class="fa-solid fa-user"></i> Perfil *
+                </label>
+                <select formControlName="perfil" class="form-control" required>
+                    <option value="">Seleccione</option>
+                    <option *ngFor="let perfil of perfiles" [value]="perfil.id">{{perfil.nombrePerfil}}</option>
+                </select>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+                <button type="submit" class="custom-btn" [disabled]="!userForm.valid">
+                    <i class="fa-solid fa-save"></i> GUARDAR
+                </button>
+            </div>
+                      
+        </form>
+    </div>
+</div>
+
+

@@ -1,0 +1,53 @@
+<div class="table-container">
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <span>Cargando...</span>
+  </div>
+
+  <table *ngIf="!loading" class="table" 
+         [class.table-striped]="striped"
+         [class.table-bordered]="bordered"
+         [class.table-hover]="hover">
+    <thead>
+      <tr>
+        <th *ngFor="let column of columns" 
+            [class.sortable]="column.sortable && sortable"
+            (click)="onSort(column)">
+          {{ column.label }}
+          <span *ngIf="column.sortable && sortable" class="sort-icon">
+            {{ getSortIcon(column) }}
+          </span>
+        </th>
+        <th *ngIf="actions.length > 0" class="actions-header">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of data; trackBy: trackByFn" 
+          (click)="onRowClick(item)"
+          [class.clickable]="rowClick.observers.length > 0">
+        <td *ngFor="let column of columns" [attr.data-label]="column.label">
+          <ng-container [ngSwitch]="column.type">
+            <span *ngSwitchCase="'number'">{{ getValue(item, column.key) | number }}</span>
+            <span *ngSwitchCase="'date'">{{ getValue(item, column.key) | date }}</span>
+            <span *ngSwitchDefault>{{ getValue(item, column.key) }}</span>
+          </ng-container>
+        </td>
+        <td *ngIf="actions.length > 0" class="actions-cell">
+          <button *ngFor="let action of actions" 
+                  type="button"
+                  [class]="'btn btn-sm ' + (action.class || 'btn-outline-primary')"
+                  (click)="executeAction(action, item); $event.stopPropagation()"
+                  [title]="action.label">
+            <span *ngIf="action.icon" [innerHTML]="action.icon"></span>
+            <span *ngIf="!action.icon">{{ action.label }}</span>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="data.length === 0" class="empty-row">
+        <td [attr.colspan]="columns.length + (actions.length > 0 ? 1 : 0)" class="text-center">
+          {{ emptyMessage }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

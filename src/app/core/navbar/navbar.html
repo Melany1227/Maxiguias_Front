@@ -1,13 +1,22 @@
-<nav class="sidebar">
-  <img src="assets/logo.png" alt="MaxiGestión" />
- <!-- <button class="btn" (click)="openLoginModal()">INGRESAR</button> -->
-  <button class="btn" routerLink="/login">INGRESAR</button>
-  <button class="btn">CATÁLOGO</button>
-  <button class="btn">ACERCA DE</button>
-  <button class="btn">CONTACTO</button>
-</nav>
+<nav class="sidebar" [class.collapsed]="isCollapsed">
+  <!-- botón hamburguesa / chevron -->
+  <button class="collapse-toggle" (click)="toggle()"
+          [attr.aria-expanded]="!isCollapsed" aria-label="Alternar sidebar">
+    <span class="bars" *ngIf="!isCollapsed">☰</span>
+    <span class="chev" *ngIf="isCollapsed">»</span>
+  </button>
 
-<app-modal-login 
-  *ngIf="showLoginModal" 
-  (closeModal)="closeLoginModal()">
-</app-modal-login>
+  <img class="logo" src="assets/logo.png" alt="MaxiGestión" />
+
+  <button class="btn" routerLink="/login" title="Ingresar">
+    <span class="label">INGRESAR</span>
+  </button>
+
+  <button class="btn" routerLink="/usuarios" title="Usuarios">
+    <span class="label">USUARIOS</span>
+  </button>
+
+  <button class="btn" title="Catálogo"><span class="label">CATÁLOGO</span></button>
+  <button class="btn" title="Acerca de"><span class="label">ACERCA DE</span></button>
+  <button class="btn" title="Contacto"><span class="label">CONTACTO</span></button>
+</nav>

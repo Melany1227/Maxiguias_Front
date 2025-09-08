@@ -10,5 +10,13 @@ export const routes: Routes = [
   {
     path: '',
     loadChildren: () => import('./core/main-page/main.routes').then(m => m.mainRoutes)
+  },
+  {
+    path: 'usuarios',
+    loadChildren: () => import('./components/users-list/users-list.routes').then(m => m.usersListRoutes)
+  },
+  {
+    path: 'user-create',
+    loadChildren: () => import('./components/user-create/user-create.routes').then(m => m.userCreateRoutes)
   }
 ];
