@@ -1,15 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Table, TableColumn, TableAction } from '../table/table';
 
 @Component({
   selector: 'app-users-list',
-  imports: [Table, RouterModule],
+  imports: [Table, RouterModule, FormsModule],
   templateUrl: './users-list.html',
   styleUrl: './users-list.css'
 })
-export class UsersList {
-  users: any[] = [
+export class UsersList implements OnInit {
+
+  searchTerm: string = '';
+  allUsers: any[] = [
     {
       id: 1,
       documento: '12345678',
@@ -48,6 +51,9 @@ export class UsersList {
     }
   ];
 
+  users: any[] = [];
+  filteredUsers: any[] = [];
+
   columns: TableColumn[] = [
     { key: 'documento', label: 'Documento' },
     { key: 'nombre', label: 'Nombre' },
@@ -77,6 +83,28 @@ export class UsersList {
 
   loading = false;
 
+  ngOnInit() {
+    this.users = [...this.allUsers];
+    this.filteredUsers = [...this.allUsers];
+  }
+
+  filterUsers() {
+    if (!this.searchTerm.trim()) {
+      this.filteredUsers = [...this.allUsers];
+      return;
+    }
+
+    const searchLower = this.searchTerm.toLowerCase();
+    this.filteredUsers = this.allUsers.filter(user =>
+      user.nombre.toLowerCase().includes(searchLower) ||
+      user.primerApellido.toLowerCase().includes(searchLower) ||
+      user.segundoApellido.toLowerCase().includes(searchLower) ||
+      user.documento.includes(this.searchTerm) ||
+      user.tipoUsuario.toLowerCase().includes(searchLower) ||
+      user.usuario.toLowerCase().includes(searchLower) ||
+      user.perfil.toLowerCase().includes(searchLower)
+    );
+  }
 
   onRowClick(user: any) {
     console.log('Usuario seleccionado:', user);
@@ -89,7 +117,9 @@ export class UsersList {
   eliminarUsuario(user: any) {
     console.log('Eliminar usuario:', user);
     if (confirm(`¿Estás seguro de eliminar al usuario ${user.nombre} ${user.primerApellido}?`)) {
+      this.allUsers = this.allUsers.filter(u => u.id !== user.id);
       this.users = this.users.filter(u => u.id !== user.id);
+      this.filterUsers(); // Refiltra después de eliminar
     }
   }
 }

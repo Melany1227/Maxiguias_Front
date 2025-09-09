@@ -1,22 +1,16 @@
-/* === Ajusta aquí el ancho del sidebar fijo === */
-:root { --sidebar-w: 260px; }
-
-/* El componente ocupa solo el área a la derecha del sidebar */
+/* Layout estático sin dependencia del sidebar */
 :host {
   display: block;
-  margin-left: var(--sidebar-w);
-  width: calc(100vw - var(--sidebar-w));
   min-height: 100vh;
-  background: #edf1f7; /* color base detrás del gradiente */
 }
 
-/* Contenedor del login centrado dentro del área de contenido */
+/* Contenedor del login centrado */
 .login-container {
   display: grid;
   place-items: center;
   min-height: calc(100vh - 48px);
-  margin: 0 24px 24px 250px;      /* separación con los bordes (como en tu captura) */
-  border-radius: 14px; /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 /* Tarjeta */
@@ -25,7 +19,7 @@
   border-radius: 18px;
   box-shadow: 0 20px 45px rgba(0,0,0,0.12);
   padding: 2.5rem;
-  width: 100%;
+  width: 300%;
   max-width: 600px;             /* un poco más ancha para tu diseño */
   animation: slideUp 0.6s ease-out;
   text-align: left;
@@ -102,11 +96,18 @@
 .signup-btn { color: #667eea; text-decoration: none; font-weight: 600; transition: color .3s ease; }
 .signup-btn:hover { color: #5a6fd8; text-decoration: underline; }
 
-/* Responsive: si el sidebar colapsa, deja el login a ancho completo */
+/* Responsive */
 @media (max-width: 900px) {
-  :root { --sidebar-w: 0px; }
-  :host { margin-left: 0; width: 100vw; }
-  .login-container { margin: 12px; border-radius: 10px; }
-  .login-card { padding: 2rem 1.5rem; max-width: 520px; }
-  .form-options { flex-direction: column; gap: 1rem; align-items: flex-start; }
+  .login-container { 
+    padding: 1rem; 
+  }
+  .login-card { 
+    padding: 2rem 1.5rem; 
+    max-width: 520px; 
+  }
+  .form-options { 
+    flex-direction: column; 
+    gap: 1rem; 
+    align-items: flex-start; 
+  }
 }

@@ -3,9 +3,20 @@
     <h2>Lista de Usuarios</h2>
     <button routerLink="/user-create" class="btn btn-outline-success">Nuevo Usuario</button>
   </div>
+
+  <!-- Buscador -->
+  <div class="search-container">
+    <i class="fa-solid fa-search search-icon"></i>
+    <input 
+      type="text" 
+      [(ngModel)]="searchTerm" 
+      (input)="filterUsers()" 
+      placeholder="Buscar usuarios por nombre, documento o tipo..." 
+      class="search-input">
+  </div>
   
   <app-table 
-    [data]="users"
+    [data]="filteredUsers"
     [columns]="columns"
     [actions]="actions"
     [loading]="loading"

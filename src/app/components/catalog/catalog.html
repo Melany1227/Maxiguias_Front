@@ -1,0 +1,86 @@
+<div class="catalog-container">
+  <!-- Header con título y buscador -->
+  <div class="catalog-header">
+    <h2>
+      <i class="fa-solid fa-box"></i>
+      Catálogo de Productos
+    </h2>
+    <div class="search-container">
+      <i class="fa-solid fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="filterProducts()" 
+        placeholder="Buscar productos..." 
+        class="search-input">
+    </div>
+  </div>
+
+  <!-- Filtros adicionales -->
+  <div class="filters-container">
+    <select [(ngModel)]="selectedCategory" (change)="filterProducts()" class="filter-select">
+      <option value="">Todas las categorías</option>
+      <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+    </select>
+    
+    <select [(ngModel)]="sortBy" (change)="sortProducts()" class="filter-select">
+      <option value="name">Ordenar por nombre</option>
+      <option value="price">Ordenar por precio</option>
+      <option value="category">Ordenar por categoría</option>
+    </select>
+  </div>
+
+  <!-- Grid de productos -->
+  <div class="products-grid">
+    <div *ngFor="let product of filteredProducts" class="product-card">
+      <div class="product-image">
+        <img [src]="product.image" [alt]="product.name" loading="lazy">
+        <div class="product-badge" *ngIf="product.isNew">Nuevo</div>
+        <div class="product-badge sale" *ngIf="product.onSale">Oferta</div>
+      </div>
+      
+      <div class="product-info">
+        <h3 class="product-name">{{product.name}}</h3>
+        <p class="product-description">{{product.description}}</p>
+        <div class="product-category">
+          <i class="fa-solid fa-tag"></i>
+          {{product.category}}
+        </div>
+        
+        <div class="product-prices">
+          <div class="price-row">
+            <span class="price-label">Mayorista:</span>
+            <span class="wholesale-price">${{product.wholesalePrice}}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Por encargo:</span>
+            <span class="custom-price">${{product.customOrderPrice}}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Al público:</span>
+            <span class="retail-price">${{product.retailPrice}}</span>
+            <span class="original-price" *ngIf="product.originalPrice">${{product.originalPrice}}</span>
+          </div>
+        </div>
+        
+        <div class="product-actions">
+          <button class="btn-add-cart" (click)="addToCart(product)">
+            <i class="fa-solid fa-cart-plus"></i>
+            Agregar
+          </button>
+          <button class="btn-view-details" (click)="viewDetails(product)">
+            <i class="fa-solid fa-eye"></i>
+            Ver más
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay productos -->
+  <div class="no-products" *ngIf="filteredProducts.length === 0">
+    <i class="fa-solid fa-box-open"></i>
+    <h3>No se encontraron productos</h3>
+    <p>Intenta con otros términos de búsqueda o filtros</p>
+  </div>
+</div>
