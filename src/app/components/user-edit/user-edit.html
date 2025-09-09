@@ -1,0 +1,281 @@
+<div class="main-content">
+    <div class="form-container">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando usuario...</p>
+        </div>
+
+        <!-- Content -->
+        <div *ngIf="!isLoading">
+            <div class="form-header">
+                <div class="header-info">
+                    <h4 class="form-title">
+                        <i class="fa-solid fa-user-edit"></i> EDITAR USUARIO
+                    </h4>
+                    <div *ngIf="currentUser" class="user-info">
+                        <span class="user-name">{{ getFullName() }}</span>
+                        <span class="user-id">ID: {{ currentUser.id }}</span>
+                        <span class="user-created">Creado: {{ formatDate(currentUser.fechaCreacion) }}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver
+                </button>
+            </div>
+
+            <!-- Message Alert -->
+            <div *ngIf="mensajeModal" class="alert" [ngClass]="tipoMensaje === 'success' ? 'alert-success' : 'alert-danger'">
+                {{ mensajeModal }}
+            </div>
+
+            <!-- Form -->
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-id-card"></i> Datos Personales
+                    </h5>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-id-badge"></i> Documento *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="documento" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('documento')"
+                                placeholder="Ingrese el documento"
+                            >
+                            <div *ngIf="isFieldInvalid('documento')" class="invalid-feedback">
+                                {{ getFieldError('documento') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-user"></i> Nombre *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="nombre" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('nombre')"
+                                placeholder="Ingrese el nombre"
+                            >
+                            <div *ngIf="isFieldInvalid('nombre')" class="invalid-feedback">
+                                {{ getFieldError('nombre') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-user"></i> Primer Apellido *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="primerApellido" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('primerApellido')"
+                                placeholder="Ingrese el primer apellido"
+                            >
+                            <div *ngIf="isFieldInvalid('primerApellido')" class="invalid-feedback">
+                                {{ getFieldError('primerApellido') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-user"></i> Segundo Apellido
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="segundoApellido" 
+                                class="form-control"
+                                placeholder="Ingrese el segundo apellido"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-address-card"></i> Información de Contacto
+                    </h5>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-location-dot"></i> Dirección *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="direccion" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('direccion')"
+                                placeholder="Ingrese la dirección"
+                            >
+                            <div *ngIf="isFieldInvalid('direccion')" class="invalid-feedback">
+                                {{ getFieldError('direccion') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-phone"></i> Teléfono *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="telefono" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('telefono')"
+                                placeholder="Ej: 300-123-4567"
+                            >
+                            <div *ngIf="isFieldInvalid('telefono')" class="invalid-feedback">
+                                {{ getFieldError('telefono') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group col-span-2">
+                            <label class="form-label">
+                                <i class="fa-solid fa-envelope"></i> Email *
+                            </label>
+                            <input 
+                                type="email" 
+                                formControlName="email" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('email')"
+                                placeholder="ejemplo@correo.com"
+                            >
+                            <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
+                                {{ getFieldError('email') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-key"></i> Acceso al Sistema
+                    </h5>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-user-circle"></i> Nombre de Usuario *
+                            </label>
+                            <input 
+                                type="text" 
+                                formControlName="usuario" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('usuario')"
+                                placeholder="Ingrese el nombre de usuario"
+                            >
+                            <div *ngIf="isFieldInvalid('usuario')" class="invalid-feedback">
+                                {{ getFieldError('usuario') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-lock"></i> Nueva Contraseña
+                                <small>(Dejar vacío para mantener la actual)</small>
+                            </label>
+                            <input 
+                                type="password" 
+                                formControlName="password" 
+                                class="form-control"
+                                [class.is-invalid]="isFieldInvalid('password')"
+                                placeholder="Solo si desea cambiarla"
+                            >
+                            <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
+                                {{ getFieldError('password') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-users"></i> Tipo de Usuario *
+                            </label>
+                            <select 
+                                formControlName="tipoUsuario" 
+                                class="form-select"
+                                [class.is-invalid]="isFieldInvalid('tipoUsuario')"
+                            >
+                                <option value="">Seleccione un tipo</option>
+                                <option *ngFor="let tipo of userTypes" [value]="tipo.nombre">
+                                    {{ tipo.nombre }}
+                                </option>
+                            </select>
+                            <div *ngIf="isFieldInvalid('tipoUsuario')" class="invalid-feedback">
+                                {{ getFieldError('tipoUsuario') }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-shield-alt"></i> Perfil *
+                            </label>
+                            <select 
+                                formControlName="perfil" 
+                                class="form-select"
+                                [class.is-invalid]="isFieldInvalid('perfil')"
+                            >
+                                <option value="">Seleccione un perfil</option>
+                                <option *ngFor="let perfil of userProfiles" [value]="perfil.nombrePerfil">
+                                    {{ perfil.nombrePerfil }}
+                                </option>
+                            </select>
+                            <div *ngIf="isFieldInvalid('perfil')" class="invalid-feedback">
+                                {{ getFieldError('perfil') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-toggle-on"></i> Estado del Usuario
+                    </h5>
+                    
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <label class="form-label">
+                                <i class="fa-solid fa-circle-check"></i> Estado *
+                            </label>
+                            <select 
+                                formControlName="estado" 
+                                class="form-select"
+                                [class.is-invalid]="isFieldInvalid('estado')"
+                            >
+                                <option value="">Seleccione un estado</option>
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                                <option value="Suspendido">Suspendido</option>
+                            </select>
+                            <div *ngIf="isFieldInvalid('estado')" class="invalid-feedback">
+                                {{ getFieldError('estado') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" (click)="cancelar()">
+                        <i class="fa-solid fa-times"></i> Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="btn btn-primary"
+                        [disabled]="!userForm.valid || isSubmitting"
+                    >
+                        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+                        <i class="fa-solid fa-save" *ngIf="!isSubmitting"></i>
+                        {{ isSubmitting ? 'Actualizando...' : 'Actualizar Usuario' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

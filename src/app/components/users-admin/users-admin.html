@@ -1,0 +1,186 @@
+<div class="users-admin-container">
+  <!-- Header -->
+  <div class="admin-header">
+    <h1>Gestión de Usuarios</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="createUser()">
+        <i class="icon">👤</i>
+        Crear Usuario
+      </button>
+      <button class="btn btn-secondary" (click)="exportUsers()">
+        <i class="icon">📤</i>
+        Exportar
+      </button>
+      <label class="btn btn-outline-secondary">
+        <i class="icon">📥</i>
+        Importar
+        <input type="file" accept=".json" (change)="importUsers($event)" hidden>
+      </label>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ userStats.total }}</div>
+      <div class="stat-label">Total Usuarios</div>
+    </div>
+    <div class="stat-card status-active">
+      <div class="stat-number">{{ userStats.activos }}</div>
+      <div class="stat-label">Activos</div>
+    </div>
+    <div class="stat-card status-inactive">
+      <div class="stat-number">{{ userStats.inactivos }}</div>
+      <div class="stat-label">Inactivos</div>
+    </div>
+    <div class="stat-card status-suspended">
+      <div class="stat-number">{{ userStats.suspendidos }}</div>
+      <div class="stat-label">Suspendidos</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar usuarios..." 
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+        >
+        <i class="search-icon">🔍</i>
+      </div>
+      
+      <select class="form-select" [(ngModel)]="selectedUserType" (change)="applyFilters()">
+        <option value="">Todos los tipos</option>
+        <option *ngFor="let type of userTypes" [value]="type.nombre">
+          {{ type.nombre }}
+        </option>
+      </select>
+
+      <select class="form-select" [(ngModel)]="selectedProfile" (change)="applyFilters()">
+        <option value="">Todos los perfiles</option>
+        <option *ngFor="let profile of userProfiles" [value]="profile.nombrePerfil">
+          {{ profile.nombrePerfil }}
+        </option>
+      </select>
+
+      <select class="form-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+        <option value="Suspendido">Suspendido</option>
+      </select>
+
+      <select class="form-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+        <option value="nombre">Ordenar por Nombre</option>
+        <option value="documento">Ordenar por Documento</option>
+        <option value="usuario">Ordenar por Usuario</option>
+        <option value="tipoUsuario">Ordenar por Tipo</option>
+        <option value="estado">Ordenar por Estado</option>
+        <option value="fechaCreacion">Ordenar por Fecha</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Avatar</th>
+          <th>Documento</th>
+          <th>Nombre Completo</th>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Tipo</th>
+          <th>Perfil</th>
+          <th>Estado</th>
+          <th>Último Acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" class="user-row">
+          <td class="avatar-cell">
+            <div class="user-avatar">
+              <img *ngIf="user.avatar" [src]="user.avatar" [alt]="getFullName(user)">
+              <div *ngIf="!user.avatar" class="avatar-placeholder">
+                {{ user.nombre.charAt(0) }}{{ user.primerApellido.charAt(0) }}
+              </div>
+            </div>
+          </td>
+          <td>{{ user.documento }}</td>
+          <td class="name-cell">
+            <div class="user-name">{{ getFullName(user) }}</div>
+            <div class="user-created">Creado: {{ formatDate(user.fechaCreacion) }}</div>
+          </td>
+          <td>{{ user.usuario }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.telefono }}</td>
+          <td>
+            <span class="user-type-badge" [ngClass]="getUserTypeClass(user.tipoUsuario)">
+              {{ user.tipoUsuario }}
+            </span>
+          </td>
+          <td>{{ user.perfil }}</td>
+          <td>
+            <select 
+              class="status-select" 
+              [ngClass]="getStatusClass(user.estado)"
+              [value]="user.estado"
+              (change)="changeUserStatus(user, $any($event.target).value)"
+            >
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+              <option value="Suspendido">Suspendido</option>
+            </select>
+          </td>
+          <td class="last-access-cell">
+            {{ formatLastAccess(user.fechaUltimoAcceso) }}
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                class="btn-action btn-view" 
+                (click)="viewUser(user.id)"
+                title="Ver detalles"
+              >
+                👁️
+              </button>
+              <button 
+                class="btn-action btn-edit" 
+                (click)="editUser(user.id)"
+                title="Editar usuario"
+              >
+                ✏️
+              </button>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="deleteUser(user)"
+                title="Eliminar usuario"
+              >
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredUsers.length === 0" class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3>No se encontraron usuarios</h3>
+      <p>No hay usuarios que coincidan con los filtros seleccionados.</p>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div class="results-info">
+    Mostrando {{ filteredUsers.length }} de {{ users.length }} usuarios
+  </div>
+</div>

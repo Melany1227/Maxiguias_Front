@@ -16,8 +16,16 @@ export const routes: Routes = [
     loadChildren: () => import('./components/users-list/users-list.routes').then(m => m.usersListRoutes)
   },
   {
-    path: 'user-create',
+    path: 'usuarios-admin',
+    loadChildren: () => import('./components/users-admin/users-admin.routes').then(m => m.usersAdminRoutes)
+  },
+  {
+    path: 'usuarios/crear',
     loadChildren: () => import('./components/user-create/user-create.routes').then(m => m.userCreateRoutes)
+  },
+  {
+    path: 'usuarios/editar/:id',
+    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes)
   },
   {
     path: 'catalog',
