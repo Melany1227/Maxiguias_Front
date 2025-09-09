@@ -1,0 +1,103 @@
+<div class="cart-container">
+  <!-- Header -->
+  <div class="cart-header">
+    <h2>
+      <i class="fa-solid fa-shopping-cart"></i>
+      Carrito de Compras
+    </h2>
+    <div class="cart-summary">
+      <span class="item-count">{{cartItemCount}} artículo(s)</span>
+      <span class="cart-total">${{cartTotal}}</span>
+    </div>
+  </div>
+
+  <!-- Empty Cart -->
+  <div class="empty-cart" *ngIf="cartItems.length === 0">
+    <i class="fa-solid fa-shopping-cart"></i>
+    <h3>Tu carrito está vacío</h3>
+    <p>Agrega productos desde el catálogo para comenzar tu pedido</p>
+    <button class="btn-continue-shopping" (click)="continueShopping()">
+      <i class="fa-solid fa-store"></i>
+      Ir al catálogo
+    </button>
+  </div>
+
+  <!-- Cart Items -->
+  <div class="cart-content" *ngIf="cartItems.length > 0">
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of cartItems">
+        <div class="item-image">
+          <img [src]="item.product.image" [alt]="item.product.name">
+        </div>
+        
+        <div class="item-info">
+          <h4 class="item-name">{{item.product.name}}</h4>
+          <p class="item-description">{{item.product.description}}</p>
+          <div class="item-meta">
+            <span class="item-category">
+              <i class="fa-solid fa-tag"></i>
+              {{item.product.category}}
+            </span>
+            <span class="price-type">
+              <i class="fa-solid fa-dollar-sign"></i>
+              {{getPriceTypeLabel(item.priceType)}}
+            </span>
+          </div>
+        </div>
+        
+        <div class="item-controls">
+          <div class="quantity-controls">
+            <button class="qty-btn" (click)="updateQuantity(item.product.id, item.priceType, item.quantity - 1)">
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <span class="quantity">{{item.quantity}}</span>
+            <button class="qty-btn" (click)="updateQuantity(item.product.id, item.priceType, item.quantity + 1)">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          
+          <div class="item-price">
+            <span class="unit-price">${{item.unitPrice}} c/u</span>
+            <span class="subtotal">${{item.subtotal}}</span>
+          </div>
+          
+          <button class="remove-btn" (click)="removeItem(item.product.id, item.priceType)">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Footer -->
+    <div class="cart-footer">
+      <div class="cart-actions">
+        <button class="btn-clear-cart" (click)="clearCart()">
+          <i class="fa-solid fa-trash-can"></i>
+          Vaciar carrito
+        </button>
+        <button class="btn-continue-shopping" (click)="continueShopping()">
+          <i class="fa-solid fa-store"></i>
+          Seguir comprando
+        </button>
+      </div>
+      
+      <div class="checkout-section">
+        <div class="total-summary">
+          <div class="total-row">
+            <span class="total-label">Subtotal:</span>
+            <span class="total-amount">${{cartTotal}}</span>
+          </div>
+          <div class="total-row final-total">
+            <span class="total-label">Total:</span>
+            <span class="total-amount">${{cartTotal}}</span>
+          </div>
+        </div>
+        
+        <button class="btn-checkout" (click)="proceedToCheckout()">
+          <i class="fa-solid fa-credit-card"></i>
+          Proceder al pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

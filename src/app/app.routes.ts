@@ -22,5 +22,33 @@ export const routes: Routes = [
   {
     path: 'catalog',
     loadChildren: () => import('./components/catalog/catalog.routes').then(m => m.catalogRoutes)
+  },
+  {
+    path: 'cart',
+    loadChildren: () => import('./components/shopping-cart/shopping-cart.routes').then(m => m.shoppingCartRoutes)
+  },
+  {
+    path: 'order-create',
+    loadChildren: () => import('./components/order-create/order-create.routes').then(m => m.orderCreateRoutes)
+  },
+  {
+    path: 'orders',
+    loadChildren: () => import('./components/orders-list/orders-list.routes').then(m => m.ordersListRoutes)
+  },
+  {
+    path: 'order-details/:id',
+    loadChildren: () => import('./components/order-details/order-details.routes').then(m => m.orderDetailsRoutes)
+  },
+  {
+    path: 'products',
+    loadChildren: () => import('./components/products-admin/products-admin.routes').then(m => m.productsAdminRoutes)
+  },
+  {
+    path: 'products/create',
+    loadChildren: () => import('./components/product-form/product-form.routes').then(m => m.productFormRoutes)
+  },
+  {
+    path: 'products/edit/:id',
+    loadChildren: () => import('./components/product-form/product-form.routes').then(m => m.productFormRoutes)
   }
 ];

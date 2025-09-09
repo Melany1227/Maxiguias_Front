@@ -17,6 +17,12 @@
   </button>
 
   <button class="btn" routerLink="/catalog" title="Catálogo"><span class="label">CATÁLOGO</span></button>
+  <button class="btn" routerLink="/products" title="Administrar Productos"><span class="label">PRODUCTOS</span></button>
+  <button class="btn cart-btn" routerLink="/cart" title="Carrito">
+    <span class="label">CARRITO</span>
+    <span class="cart-badge" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
+  </button>
+  <button class="btn" routerLink="/orders" title="Pedidos"><span class="label">PEDIDOS</span></button>
   <button class="btn" title="Acerca de"><span class="label">ACERCA DE</span></button>
   <button class="btn" title="Contacto"><span class="label">CONTACTO</span></button>
 </nav>

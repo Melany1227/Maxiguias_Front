@@ -1,0 +1,131 @@
+<div class="order-create-container">
+  <!-- Header -->
+  <div class="order-header">
+    <button class="btn-back" (click)="goBack()">
+      <i class="fa-solid fa-arrow-left"></i>
+      Volver al carrito
+    </button>
+    <h2>
+      <i class="fa-solid fa-file-invoice"></i>
+      Crear Pedido
+    </h2>
+  </div>
+
+  <div class="order-content">
+    <!-- Customer Information Form -->
+    <div class="customer-section">
+      <h3>
+        <i class="fa-solid fa-user"></i>
+        Información del Cliente
+      </h3>
+      
+      <form (ngSubmit)="onSubmit()" #orderForm="ngForm" class="customer-form">
+        <div class="form-group">
+          <label for="customerName">Nombre completo *</label>
+          <input 
+            type="text" 
+            id="customerName"
+            name="customerName"
+            [(ngModel)]="customerInfo.name"
+            required
+            class="form-control"
+            placeholder="Ingresa el nombre completo">
+        </div>
+
+        <div class="form-group">
+          <label for="customerEmail">Correo electrónico *</label>
+          <input 
+            type="email" 
+            id="customerEmail"
+            name="customerEmail"
+            [(ngModel)]="customerInfo.email"
+            required
+            class="form-control"
+            placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="form-group">
+          <label for="customerPhone">Teléfono *</label>
+          <input 
+            type="tel" 
+            id="customerPhone"
+            name="customerPhone"
+            [(ngModel)]="customerInfo.phone"
+            required
+            class="form-control"
+            placeholder="+57 300 123 4567">
+        </div>
+
+        <div class="form-group">
+          <label for="deliveryDate">Fecha de entrega (opcional)</label>
+          <input 
+            type="date" 
+            id="deliveryDate"
+            name="deliveryDate"
+            [(ngModel)]="customerInfo.deliveryDate"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notas adicionales (opcional)</label>
+          <textarea 
+            id="notes"
+            name="notes"
+            [(ngModel)]="customerInfo.notes"
+            class="form-control"
+            rows="3"
+            placeholder="Instrucciones especiales, comentarios, etc."></textarea>
+        </div>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h3>
+        <i class="fa-solid fa-receipt"></i>
+        Resumen del Pedido
+      </h3>
+      
+      <div class="summary-items">
+        <div class="summary-item" *ngFor="let item of cartItems">
+          <div class="item-summary">
+            <img [src]="item.product.image" [alt]="item.product.name" class="item-image">
+            <div class="item-details">
+              <h4>{{item.product.name}}</h4>
+              <p class="item-meta">
+                <span class="category">{{item.product.category}}</span>
+                <span class="price-type">{{getPriceTypeLabel(item.priceType)}}</span>
+              </p>
+              <div class="item-pricing">
+                <span class="quantity">{{item.quantity}} x ${{item.unitPrice}}</span>
+                <span class="subtotal">${{item.subtotal}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-total">
+        <div class="total-row">
+          <span class="total-label">Subtotal:</span>
+          <span class="total-amount">${{cartTotal}}</span>
+        </div>
+        <div class="total-row final-total">
+          <span class="total-label">Total:</span>
+          <span class="total-amount">${{cartTotal}}</span>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit"
+        (click)="onSubmit()"
+        [disabled]="!isValidForm() || isSubmitting"
+        class="btn-create-order">
+        <i class="fa-solid fa-check" *ngIf="!isSubmitting"></i>
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+        {{isSubmitting ? 'Creando pedido...' : 'Crear Pedido'}}
+      </button>
+    </div>
+  </div>
+</div>

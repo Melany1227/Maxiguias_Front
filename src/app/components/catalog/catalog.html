@@ -63,10 +63,19 @@
           </div>
         </div>
         
+        <div class="price-selector">
+          <label for="priceType-{{product.id}}" class="price-type-label">Tipo de precio:</label>
+          <select id="priceType-{{product.id}}" class="price-type-select" #priceTypeSelect>
+            <option value="retail">Al público</option>
+            <option value="custom">Por encargo</option>
+            <option value="wholesale">Mayorista</option>
+          </select>
+        </div>
+        
         <div class="product-actions">
-          <button class="btn-add-cart" (click)="addToCart(product)">
+          <button class="btn-add-cart" (click)="addToCart(product, getPriceType(priceTypeSelect.value))">
             <i class="fa-solid fa-cart-plus"></i>
-            Agregar
+            Agregar al carrito
           </button>
           <button class="btn-view-details" (click)="viewDetails(product)">
             <i class="fa-solid fa-eye"></i>

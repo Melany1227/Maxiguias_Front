@@ -1,0 +1,174 @@
+<div class="products-admin-container">
+  <!-- Header -->
+  <div class="admin-header">
+    <h2>
+      <i class="fa-solid fa-boxes-stacked"></i>
+      Administración de Productos
+    </h2>
+    <div class="header-actions">
+      <button class="btn-export" (click)="exportProducts()">
+        <i class="fa-solid fa-download"></i>
+        Exportar
+      </button>
+      <label class="btn-import">
+        <i class="fa-solid fa-upload"></i>
+        Importar
+        <input type="file" accept=".json" (change)="importProducts($event)" hidden>
+      </label>
+      <button class="btn-create" (click)="createProduct()">
+        <i class="fa-solid fa-plus"></i>
+        Nuevo Producto
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="search-container">
+      <i class="fa-solid fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()" 
+        placeholder="Buscar productos..." 
+        class="search-input">
+    </div>
+    
+    <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="filter-select">
+      <option value="">Todas las categorías</option>
+      <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+    </select>
+    
+    <select [(ngModel)]="sortBy" (change)="sortProducts()" class="filter-select">
+      <option value="name">Ordenar por nombre</option>
+      <option value="category">Ordenar por categoría</option>
+      <option value="retailPrice">Ordenar por precio</option>
+      <option value="stock">Ordenar por stock</option>
+    </select>
+  </div>
+
+  <!-- Products Table -->
+  <div class="table-container">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Imagen</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Precios</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of filteredProducts" class="product-row">
+          <td class="image-cell">
+            <img [src]="product.image" [alt]="product.name" class="product-image">
+          </td>
+          
+          <td class="product-info">
+            <h4>{{product.name}}</h4>
+            <p>{{product.description | slice:0:100}}{{product.description.length > 100 ? '...' : ''}}</p>
+          </td>
+          
+          <td class="category-cell">
+            <span class="category-tag">{{product.category}}</span>
+          </td>
+          
+          <td class="prices-cell">
+            <div class="price-row">
+              <span class="price-label">Mayorista:</span>
+              <span class="price-value">${{product.wholesalePrice}}</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Encargo:</span>
+              <span class="price-value">${{product.customOrderPrice}}</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Público:</span>
+              <span class="price-value main-price">${{product.retailPrice}}</span>
+            </div>
+          </td>
+          
+          <td class="stock-cell">
+            <div class="stock-info">
+              <input 
+                type="number" 
+                [value]="product.stock || 0"
+                (change)="updateStock(product, +$any($event.target).value)"
+                class="stock-input"
+                min="0">
+              <span class="stock-status" [ngClass]="getStockClass(product.stock)">
+                {{getStockStatus(product.stock)}}
+              </span>
+            </div>
+          </td>
+          
+          <td class="status-cell">
+            <div class="status-badges">
+              <button 
+                class="badge-btn" 
+                [class.active]="product.isNew"
+                (click)="toggleProductStatus(product, 'isNew')"
+                title="Producto nuevo">
+                <i class="fa-solid fa-star"></i>
+                Nuevo
+              </button>
+              <button 
+                class="badge-btn sale" 
+                [class.active]="product.onSale"
+                (click)="toggleProductStatus(product, 'onSale')"
+                title="En oferta">
+                <i class="fa-solid fa-fire"></i>
+                Oferta
+              </button>
+            </div>
+          </td>
+          
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-view" (click)="viewProduct(product.id)" title="Ver detalles">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+              <button class="btn-edit" (click)="editProduct(product.id)" title="Editar">
+                <i class="fa-solid fa-edit"></i>
+              </button>
+              <button class="btn-delete" (click)="deleteProduct(product)" title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredProducts.length === 0">
+    <i class="fa-solid fa-box-open"></i>
+    <h3>No se encontraron productos</h3>
+    <p *ngIf="searchTerm || selectedCategory">Intenta cambiar los filtros de búsqueda</p>
+    <p *ngIf="!searchTerm && !selectedCategory">No hay productos creados aún</p>
+    <button class="btn-create-first" (click)="createProduct()">
+      <i class="fa-solid fa-plus"></i>
+      Crear primer producto
+    </button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-bar" *ngIf="products.length > 0">
+    <div class="summary-item">
+      <span class="summary-label">Total productos:</span>
+      <span class="summary-value">{{products.length}}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Categorías:</span>
+      <span class="summary-value">{{categories.length}}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Mostrando:</span>
+      <span class="summary-value">{{filteredProducts.length}}</span>
+    </div>
+  </div>
+</div>
