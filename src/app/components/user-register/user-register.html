@@ -1,0 +1,260 @@
+<div class="register-container">
+    <div class="register-card">
+        <!-- Header -->
+        <div class="register-header">
+            <div class="header-content">
+                <h2 class="register-title">
+                    👤➕ Crear Cuenta
+                </h2>
+                <p class="register-subtitle">
+                    Únete a MaxiGestión y comienza a gestionar tus pedidos
+                </p>
+            </div>
+        </div>
+
+        <!-- Message Alert -->
+        <div *ngIf="mensajeModal" class="alert" [ngClass]="tipoMensaje === 'success' ? 'alert-success' : 'alert-danger'">
+            {{ mensajeModal }}
+        </div>
+
+        <!-- Registration Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+            
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    🆔 Información Personal
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            📄 Documento *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="documento" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('documento')"
+                            placeholder="Número de documento"
+                        >
+                        <div *ngIf="isFieldInvalid('documento')" class="invalid-feedback">
+                            {{ getFieldError('documento') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            👤 Nombre *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="nombre" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('nombre')"
+                            placeholder="Tu nombre"
+                        >
+                        <div *ngIf="isFieldInvalid('nombre')" class="invalid-feedback">
+                            {{ getFieldError('nombre') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            👤 Primer Apellido *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="primerApellido" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('primerApellido')"
+                            placeholder="Primer apellido"
+                        >
+                        <div *ngIf="isFieldInvalid('primerApellido')" class="invalid-feedback">
+                            {{ getFieldError('primerApellido') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            👤 Segundo Apellido
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="segundoApellido" 
+                            class="form-control"
+                            placeholder="Segundo apellido (opcional)"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    📞 Información de Contacto
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            🏠 Dirección *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="direccion" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('direccion')"
+                            placeholder="Dirección completa"
+                        >
+                        <div *ngIf="isFieldInvalid('direccion')" class="invalid-feedback">
+                            {{ getFieldError('direccion') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            📱 Teléfono *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="telefono" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('telefono')"
+                            placeholder="Ej: 300-123-4567"
+                        >
+                        <div *ngIf="isFieldInvalid('telefono')" class="invalid-feedback">
+                            {{ getFieldError('telefono') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">
+                            ✉️ Email *
+                        </label>
+                        <input 
+                            type="email" 
+                            formControlName="email" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('email')"
+                            placeholder="ejemplo@correo.com"
+                        >
+                        <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
+                            {{ getFieldError('email') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Security Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    🔐 Seguridad de la Cuenta
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            👤 Nombre de Usuario *
+                        </label>
+                        <input 
+                            type="text" 
+                            formControlName="usuario" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('usuario')"
+                            placeholder="Nombre de usuario único"
+                        >
+                        <div *ngIf="isFieldInvalid('usuario')" class="invalid-feedback">
+                            {{ getFieldError('usuario') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group"></div> <!-- Empty space for alignment -->
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            🔒 Contraseña *
+                        </label>
+                        <input 
+                            type="password" 
+                            formControlName="password" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('password')"
+                            placeholder="Mínimo 6 caracteres"
+                        >
+                        <div *ngIf="registerForm.get('password')?.value && !isFieldInvalid('password')" 
+                             class="password-strength" 
+                             [ngClass]="getPasswordStrengthClass()">
+                            Seguridad: {{ getPasswordStrength() }}
+                        </div>
+                        <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
+                            {{ getFieldError('password') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            🔒 Confirmar Contraseña *
+                        </label>
+                        <input 
+                            type="password" 
+                            formControlName="confirmPassword" 
+                            class="form-control"
+                            [class.is-invalid]="isFieldInvalid('confirmPassword')"
+                            placeholder="Repite la contraseña"
+                        >
+                        <div *ngIf="isFieldInvalid('confirmPassword')" class="invalid-feedback">
+                            {{ getFieldError('confirmPassword') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="form-section">
+                <div class="terms-section">
+                    <label class="checkbox-label">
+                        <input 
+                            type="checkbox" 
+                            formControlName="acceptTerms"
+                            class="checkbox-input"
+                            [class.is-invalid]="isFieldInvalid('acceptTerms')"
+                        >
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">
+                            Acepto los <a href="#" class="terms-link">Términos y Condiciones</a> 
+                            y la <a href="#" class="privacy-link">Política de Privacidad</a> *
+                        </span>
+                    </label>
+                    <div *ngIf="isFieldInvalid('acceptTerms')" class="invalid-feedback">
+                        {{ getFieldError('acceptTerms') }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary btn-large" (click)="goToLogin()">
+                    🔑 Ya tengo cuenta
+                </button>
+                <button 
+                    type="submit" 
+                    class="btn btn-primary btn-large"
+                    [disabled]="!registerForm.valid || isSubmitting"
+                >
+                    <span *ngIf="isSubmitting">⏳</span>
+                    <span *ngIf="!isSubmitting">🚀</span>
+                    {{ isSubmitting ? 'Registrando...' : 'Crear Cuenta' }}
+                </button>
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="register-footer">
+            <p class="footer-text">
+                ¿Ya tienes una cuenta? 
+                <a (click)="goToLogin()" class="login-link">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </div>
+</div>

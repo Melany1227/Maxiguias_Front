@@ -8,6 +8,10 @@ export const routes: Routes = [
     loadChildren: () => import('./core/login/login.routes').then(m => m.loginRoutes)
   },
   {
+    path: 'register',
+    loadChildren: () => import('./components/user-register/user-register.routes').then(m => m.userRegisterRoutes)
+  },
+  {
     path: '',
     loadChildren: () => import('./core/main-page/main.routes').then(m => m.mainRoutes)
   },
