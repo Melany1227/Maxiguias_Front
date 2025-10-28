@@ -55,7 +55,7 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fa-solid fa-user"></i> Primer Apellido *
+                            <i class="fa-solid fa-user"></i> Primer Apellido
                         </label>
                         <input 
                             type="text" 
@@ -127,13 +127,13 @@
                         </label>
                         <input 
                             type="email" 
-                            formControlName="email" 
+                            formControlName="correo" 
                             class="form-control"
-                            [class.is-invalid]="isFieldInvalid('email')"
+                            [class.is-invalid]="isFieldInvalid('correo')"
                             placeholder="ejemplo@correo.com"
                         >
-                        <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
-                            {{ getFieldError('email') }}
+                        <div *ngIf="isFieldInvalid('correo')" class="invalid-feedback">
+                            {{ getFieldError('correo') }}
                         </div>
                     </div>
                 </div>

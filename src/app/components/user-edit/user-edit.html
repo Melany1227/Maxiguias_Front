@@ -15,8 +15,8 @@
                     </h4>
                     <div *ngIf="currentUser" class="user-info">
                         <span class="user-name">{{ getFullName() }}</span>
-                        <span class="user-id">ID: {{ currentUser.id }}</span>
-                        <span class="user-created">Creado: {{ formatDate(currentUser.fechaCreacion) }}</span>
+                        <span class="user-id">Documento: {{ currentUser.documento }}</span>
+                        <span class="user-created">Creado: {{ formatDate(currentUser.fechaRegistro) }}</span>
                     </div>
                 </div>
                 <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
@@ -71,7 +71,7 @@
 
                         <div class="form-group">
                             <label class="form-label">
-                                <i class="fa-solid fa-user"></i> Primer Apellido *
+                                <i class="fa-solid fa-user"></i> Primer Apellido
                             </label>
                             <input 
                                 type="text" 
@@ -143,13 +143,13 @@
                             </label>
                             <input 
                                 type="email" 
-                                formControlName="email" 
+                                formControlName="correo" 
                                 class="form-control"
-                                [class.is-invalid]="isFieldInvalid('email')"
+                                [class.is-invalid]="isFieldInvalid('correo')"
                                 placeholder="ejemplo@correo.com"
                             >
-                            <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
-                                {{ getFieldError('email') }}
+                            <div *ngIf="isFieldInvalid('correo')" class="invalid-feedback">
+                                {{ getFieldError('correo') }}
                             </div>
                         </div>
                     </div>
@@ -234,32 +234,6 @@
                     </div>
                 </div>
 
-                <div class="form-section">
-                    <h5 class="section-title">
-                        <i class="fa-solid fa-toggle-on"></i> Estado del Usuario
-                    </h5>
-                    
-                    <div class="form-grid">
-                        <div class="form-group col-span-2">
-                            <label class="form-label">
-                                <i class="fa-solid fa-circle-check"></i> Estado *
-                            </label>
-                            <select 
-                                formControlName="estado" 
-                                class="form-select"
-                                [class.is-invalid]="isFieldInvalid('estado')"
-                            >
-                                <option value="">Seleccione un estado</option>
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
-                                <option value="Suspendido">Suspendido</option>
-                            </select>
-                            <div *ngIf="isFieldInvalid('estado')" class="invalid-feedback">
-                                {{ getFieldError('estado') }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" (click)="cancelar()">

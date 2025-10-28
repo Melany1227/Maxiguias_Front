@@ -83,12 +83,15 @@ export class UsersList implements OnInit, OnDestroy {
 
   eliminarUsuario(user: User) {
     if (confirm(`¿Estás seguro de eliminar al usuario ${user.nombre} ${user.primerApellido}?`)) {
-      const success = this.userService.deleteUser(user.id);
-      if (success) {
-        alert('Usuario eliminado exitosamente');
-      } else {
-        alert('Error al eliminar el usuario');
-      }
+      this.userService.deleteUser(user.documento).subscribe({
+        next: (response) => {
+          alert('Usuario eliminado exitosamente');
+        },
+        error: (error) => {
+          alert('Error al eliminar el usuario');
+          console.error('Error:', error);
+        }
+      });
     }
   }
 }

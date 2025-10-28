@@ -17,18 +17,23 @@ export const routes: Routes = [
   },
   {
     path: 'usuarios',
-    loadChildren: () => import('./components/users-list/users-list.routes').then(m => m.usersListRoutes)
+    redirectTo: '/usuarios-admin',
+    pathMatch: 'full'
   },
   {
     path: 'usuarios-admin',
     loadChildren: () => import('./components/users-admin/users-admin.routes').then(m => m.usersAdminRoutes)
   },
   {
-    path: 'usuarios/crear',
+    path: 'usuarios-admin/crear',
     loadChildren: () => import('./components/user-create/user-create.routes').then(m => m.userCreateRoutes)
   },
   {
-    path: 'usuarios/editar/:id',
+    path: 'usuarios-admin/editar/:id',
+    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes)
+  },
+  {
+    path: 'usuarios-admin/ver/:id',
     loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes)
   },
   {

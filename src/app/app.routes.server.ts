@@ -10,7 +10,15 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
-    path: 'usuarios/editar/**',
+    path: 'usuarios-admin/editar/**',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'usuarios-admin/ver/**',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'usuarios-admin/crear/**',
     renderMode: RenderMode.Server
   },
   {

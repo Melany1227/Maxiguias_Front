@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { UserService, User, UserType, UserProfile } from '../../services/user.service';
+import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,8 +14,8 @@ import { Subscription } from 'rxjs';
 export class UserEdit implements OnInit, OnDestroy {
   
   userForm!: FormGroup;
-  userTypes: UserType[] = [];
-  userProfiles: UserProfile[] = [];
+  userTypes: TipoUsuario[] = [];
+  userProfiles: Perfil[] = [];
   mensajeModal: string = '';
   tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
@@ -52,31 +52,42 @@ export class UserEdit implements OnInit, OnDestroy {
         Validators.pattern(/^[0-9]+$/)
       ]],
       nombre: ['', [Validators.required, Validators.minLength(2)]],
-      primerApellido: ['', [Validators.required, Validators.minLength(2)]],
+      primerApellido: [''],
       segundoApellido: [''],
       direccion: ['', Validators.required],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9\-\+\s\(\)]{10,}$/)]],
-      email: ['', [Validators.required, Validators.email]],
+      correo: ['', [Validators.required, Validators.email]],
       usuario: ['', [Validators.required, Validators.minLength(3)]],
       password: [''], // No required for editing
       tipoUsuario: ['', Validators.required],
-      perfil: ['', Validators.required],
-      estado: ['', Validators.required]
+      perfil: ['', Validators.required]
     });
   }
 
   loadData() {
-    this.subscription.add(
-      this.userService.userTypes$.subscribe(types => {
-        this.userTypes = types;
-      })
-    );
+    // Cargar datos del formulario desde la API
+    this.userService.getFormularioData().subscribe({
+      next: (data) => {
+        console.log('Form data loaded from API:', data);
+        this.userTypes = data.tiposUsuario || [];
+        this.userProfiles = data.perfiles || [];
+      },
+      error: (error) => {
+        console.error('Error loading form data:', error);
+        // Fallback a los datos del servicio si la API falla
+        this.subscription.add(
+          this.userService.userTypes$.subscribe(types => {
+            this.userTypes = types;
+          })
+        );
 
-    this.subscription.add(
-      this.userService.userProfiles$.subscribe(profiles => {
-        this.userProfiles = profiles;
-      })
-    );
+        this.subscription.add(
+          this.userService.userProfiles$.subscribe(profiles => {
+            this.userProfiles = profiles;
+          })
+        );
+      }
+    });
   }
 
   loadUser() {
@@ -84,16 +95,19 @@ export class UserEdit implements OnInit, OnDestroy {
       this.route.params.subscribe(params => {
         this.userId = +params['id'];
         if (this.userId) {
-          const foundUser = this.userService.getUserById(this.userId);
-          this.currentUser = foundUser || null;
-          if (this.currentUser) {
+          this.userService.getUserById(this.userId).subscribe({
+          next: (user) => {
+            this.currentUser = user;
             this.populateForm();
             this.isLoading = false;
-          } else {
+          },
+          error: (error) => {
             this.mensajeModal = 'Usuario no encontrado';
             this.tipoMensaje = 'error';
             this.isLoading = false;
+            console.error('Error:', error);
           }
+        });
         }
       })
     );
@@ -108,11 +122,10 @@ export class UserEdit implements OnInit, OnDestroy {
         segundoApellido: this.currentUser.segundoApellido,
         direccion: this.currentUser.direccion,
         telefono: this.currentUser.telefono,
-        email: this.currentUser.email,
-        usuario: this.currentUser.usuario,
-        tipoUsuario: this.currentUser.tipoUsuario,
-        perfil: this.currentUser.perfil,
-        estado: this.currentUser.estado
+        correo: this.currentUser.correo,
+        usuario: this.currentUser.nombreUsuario,
+        tipoUsuario: this.currentUser.tipoUsuario.nombre,
+        perfil: this.currentUser.perfil.nombrePerfil
       });
     }
   }
@@ -123,6 +136,19 @@ export class UserEdit implements OnInit, OnDestroy {
       
       try {
         const formValue = this.userForm.value;
+        
+        // Buscar el tipo de usuario y perfil seleccionados
+        const selectedTipoUsuario = this.userTypes.find(tipo => tipo.nombre === formValue.tipoUsuario);
+        const selectedPerfil = this.userProfiles.find(perfil => perfil.nombrePerfil === formValue.perfil);
+        
+        if (!selectedTipoUsuario) {
+          throw new Error('Tipo de usuario no válido');
+        }
+        
+        if (!selectedPerfil) {
+          throw new Error('Perfil no válido');
+        }
+        
         const userData: Partial<User> = {
           documento: formValue.documento,
           nombre: formValue.nombre,
@@ -130,31 +156,39 @@ export class UserEdit implements OnInit, OnDestroy {
           segundoApellido: formValue.segundoApellido || '',
           direccion: formValue.direccion,
           telefono: formValue.telefono,
-          email: formValue.email,
-          usuario: formValue.usuario,
-          tipoUsuario: formValue.tipoUsuario as 'Administrador' | 'Empleado' | 'Cliente',
-          perfil: formValue.perfil,
-          estado: formValue.estado as 'Activo' | 'Inactivo' | 'Suspendido'
+          correo: formValue.correo,
+          nombreUsuario: formValue.usuario,
+          tipoUsuario: selectedTipoUsuario,
+          perfil: selectedPerfil
         };
 
         // Only include password if it was provided
         if (formValue.password && formValue.password.trim()) {
-          userData.password = formValue.password;
+          (userData as any).contrasena = formValue.password;
         }
 
-        const updatedUser = this.userService.updateUser(this.userId, userData);
-        
-        if (updatedUser) {
-          this.mensajeModal = `Usuario ${updatedUser.nombre} ${updatedUser.primerApellido} actualizado exitosamente`;
-          this.tipoMensaje = 'success';
-          
-          setTimeout(() => {
-            this.router.navigate(['/usuarios']);
-          }, 2000);
-        } else {
-          this.mensajeModal = 'Error al actualizar el usuario';
-          this.tipoMensaje = 'error';
-        }
+        this.userService.updateUser(this.userId, userData).subscribe({
+          next: (response) => {
+            console.log('Response from backend:', response);
+            // Verificar si la respuesta indica un error
+            if (this.userService.isErrorResponse(response)) {
+              this.mensajeModal = response;
+              this.tipoMensaje = 'error';
+            } else {
+              this.mensajeModal = response || 'Usuario actualizado exitosamente';
+              this.tipoMensaje = 'success';
+              
+              setTimeout(() => {
+                this.router.navigate(['/usuarios-admin']);
+              }, 2000);
+            }
+          },
+          error: (error) => {
+            this.mensajeModal = this.userService.extractErrorMessage(error);
+            this.tipoMensaje = 'error';
+            console.error('Error completo:', error);
+          }
+        });
 
       } catch (error: any) {
         this.mensajeModal = error.message || 'Error al actualizar el usuario';
@@ -182,7 +216,7 @@ export class UserEdit implements OnInit, OnDestroy {
     const control = this.userForm.get(fieldName);
     if (control && control.errors && control.touched) {
       if (control.errors['required']) return `${fieldName} es requerido`;
-      if (control.errors['email']) return 'Email inválido';
+      if (control.errors['email']) return 'Correo inválido';
       if (control.errors['minlength']) return `${fieldName} debe tener al menos ${control.errors['minlength'].requiredLength} caracteres`;
       if (control.errors['maxlength']) return `${fieldName} no puede tener más de ${control.errors['maxlength'].requiredLength} caracteres`;
       if (control.errors['pattern']) {
@@ -199,7 +233,7 @@ export class UserEdit implements OnInit, OnDestroy {
   }
 
   cancelar() {
-    this.router.navigate(['/usuarios']);
+    this.router.navigate(['/usuarios-admin']);
   }
 
   getFullName(): string {

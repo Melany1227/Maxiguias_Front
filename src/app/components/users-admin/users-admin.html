@@ -11,6 +11,10 @@
         <i class="icon">📤</i>
         Exportar
       </button>
+      <button class="btn btn-info" (click)="refreshUsers()">
+        <i class="icon">🔄</i>
+        Refrescar
+      </button>
       <label class="btn btn-outline-secondary">
         <i class="icon">📥</i>
         Importar
@@ -25,17 +29,17 @@
       <div class="stat-number">{{ userStats.total }}</div>
       <div class="stat-label">Total Usuarios</div>
     </div>
-    <div class="stat-card status-active">
-      <div class="stat-number">{{ userStats.activos }}</div>
-      <div class="stat-label">Activos</div>
+    <div class="stat-card type-admin">
+      <div class="stat-number">{{ userStats.administradores }}</div>
+      <div class="stat-label">Administradores</div>
     </div>
-    <div class="stat-card status-inactive">
-      <div class="stat-number">{{ userStats.inactivos }}</div>
-      <div class="stat-label">Inactivos</div>
+    <div class="stat-card type-employee">
+      <div class="stat-number">{{ userStats.empleados }}</div>
+      <div class="stat-label">Empleados</div>
     </div>
-    <div class="stat-card status-suspended">
-      <div class="stat-number">{{ userStats.suspendidos }}</div>
-      <div class="stat-label">Suspendidos</div>
+    <div class="stat-card type-client">
+      <div class="stat-number">{{ userStats.clientes }}</div>
+      <div class="stat-label">Clientes</div>
     </div>
   </div>
 
@@ -48,6 +52,7 @@
           class="form-control" 
           placeholder="Buscar usuarios..." 
           [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
           (input)="applyFilters()"
         >
         <i class="search-icon">🔍</i>
@@ -67,20 +72,13 @@
         </option>
       </select>
 
-      <select class="form-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
-        <option value="">Todos los estados</option>
-        <option value="Activo">Activo</option>
-        <option value="Inactivo">Inactivo</option>
-        <option value="Suspendido">Suspendido</option>
-      </select>
 
       <select class="form-select" [(ngModel)]="sortBy" (change)="applyFilters()">
         <option value="nombre">Ordenar por Nombre</option>
         <option value="documento">Ordenar por Documento</option>
         <option value="usuario">Ordenar por Usuario</option>
         <option value="tipoUsuario">Ordenar por Tipo</option>
-        <option value="estado">Ordenar por Estado</option>
-        <option value="fechaCreacion">Ordenar por Fecha</option>
+        <option value="fechaRegistro">Ordenar por Fecha</option>
       </select>
     </div>
   </div>
@@ -98,8 +96,7 @@
           <th>Teléfono</th>
           <th>Tipo</th>
           <th>Perfil</th>
-          <th>Estado</th>
-          <th>Último Acceso</th>
+          <th>Fecha Registro</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -107,53 +104,38 @@
         <tr *ngFor="let user of filteredUsers" class="user-row">
           <td class="avatar-cell">
             <div class="user-avatar">
-              <img *ngIf="user.avatar" [src]="user.avatar" [alt]="getFullName(user)">
-              <div *ngIf="!user.avatar" class="avatar-placeholder">
-                {{ user.nombre.charAt(0) }}{{ user.primerApellido.charAt(0) }}
+              <div class="avatar-placeholder">
+                {{ user.nombre ? user.nombre.charAt(0) : '' }}{{ user.primerApellido ? user.primerApellido.charAt(0) : '' }}
               </div>
             </div>
           </td>
           <td>{{ user.documento }}</td>
           <td class="name-cell">
             <div class="user-name">{{ getFullName(user) }}</div>
-            <div class="user-created">Creado: {{ formatDate(user.fechaCreacion) }}</div>
+            <div class="user-created">Creado: {{ user.fechaRegistro ? formatDate(user.fechaRegistro) : 'N/A' }}</div>
           </td>
-          <td>{{ user.usuario }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.telefono }}</td>
+          <td>{{ user.nombreUsuario || 'Sin usuario' }}</td>
+          <td>{{ user.correo || 'Sin correo' }}</td>
+          <td>{{ user.telefono || 'Sin teléfono' }}</td>
           <td>
-            <span class="user-type-badge" [ngClass]="getUserTypeClass(user.tipoUsuario)">
-              {{ user.tipoUsuario }}
+            <span class="user-type-badge" [ngClass]="getUserTypeClass(user.tipoUsuario?.nombre || 'Sin tipo')">
+              {{ user.tipoUsuario?.nombre || 'Sin tipo' }}
             </span>
           </td>
-          <td>{{ user.perfil }}</td>
-          <td>
-            <select 
-              class="status-select" 
-              [ngClass]="getStatusClass(user.estado)"
-              [value]="user.estado"
-              (change)="changeUserStatus(user, $any($event.target).value)"
-            >
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-              <option value="Suspendido">Suspendido</option>
-            </select>
-          </td>
-          <td class="last-access-cell">
-            {{ formatLastAccess(user.fechaUltimoAcceso) }}
-          </td>
+          <td>{{ user.perfil?.nombrePerfil || 'Sin perfil' }}</td>
+          <td>{{ user.fechaRegistro ? formatDate(user.fechaRegistro) : 'N/A' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
               <button 
                 class="btn-action btn-view" 
-                (click)="viewUser(user.id)"
+                (click)="viewUser(user.documento)"
                 title="Ver detalles"
               >
                 👁️
               </button>
               <button 
                 class="btn-action btn-edit" 
-                (click)="editUser(user.id)"
+                (click)="editUser(user.documento)"
                 title="Editar usuario"
               >
                 ✏️

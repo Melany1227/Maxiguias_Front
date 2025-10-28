@@ -1,158 +1,123 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 export interface User {
-  id: number;
-  documento: string;
+  documento: number;
   nombre: string;
   primerApellido: string;
   segundoApellido: string;
   direccion: string;
-  telefono: string;
-  email: string;
-  usuario: string;
-  password?: string;
-  tipoUsuario: 'Administrador' | 'Empleado' | 'Cliente';
-  perfil: string;
-  estado: 'Activo' | 'Inactivo' | 'Suspendido';
-  fechaCreacion: Date;
-  fechaUltimoAcceso?: Date;
-  avatar?: string;
+  telefono: number;
+  correo: string;
+  nombreUsuario: string;
+  contrasena?: string;
+  fechaRegistro: Date;
+  tipoUsuario: TipoUsuario;
+  perfil: Perfil;
+  ciudad: Ciudad;
 }
 
-export interface UserType {
+export interface TipoUsuario {
   id: number;
   nombre: string;
-  descripcion: string;
 }
 
-export interface UserProfile {
+export interface Perfil {
   id: number;
   nombrePerfil: string;
-  permisos: string[];
-  descripcion: string;
+  rol: Rol;
 }
+
+export interface Rol {
+  id: number;
+  nombre: string;
+}
+
+export interface Ciudad {
+  id: number;
+  nombre: string;
+  departamento: Departamento;
+}
+
+export interface Departamento {
+  id: number;
+  nombre: string;
+}
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private baseUrl = 'http://localhost:8080/api/usuarios';
   private users = new BehaviorSubject<User[]>([]);
-  private userTypes = new BehaviorSubject<UserType[]>([]);
-  private userProfiles = new BehaviorSubject<UserProfile[]>([]);
+  private userTypes = new BehaviorSubject<TipoUsuario[]>([]);
+  private userProfiles = new BehaviorSubject<Perfil[]>([]);
 
   users$ = this.users.asObservable();
   userTypes$ = this.userTypes.asObservable();
   userProfiles$ = this.userProfiles.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.initializeDefaultData();
-    this.loadUsersFromStorage();
+    this.loadInitialUsers();
   }
 
-  // CRUD Operations for Users
+  // API Operations for Users
+  loadUsersFromAPI(page: number = 0, size: number = 10, buscar?: string): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    
+    if (buscar) {
+      params = params.set('buscar', buscar);
+    }
+
+    return this.http.get<any>(`${this.baseUrl}`, { params });
+  }
+
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/${id}`);
+  }
+
+  createUser(userData: Omit<User, 'fechaRegistro'>): Observable<string> {
+    return this.http.post(this.baseUrl, userData, { 
+      responseType: 'text',
+      headers: { 'Content-Type': 'application/json' }
+    }) as Observable<string>;
+  }
+
+  updateUser(id: number, userData: Partial<User>): Observable<string> {
+    return this.http.put(`${this.baseUrl}/${id}`, userData, { 
+      responseType: 'text',
+      headers: { 'Content-Type': 'application/json' }
+    }) as Observable<string>;
+  }
+
+  deleteUser(id: number): Observable<string> {
+    return this.http.delete(`${this.baseUrl}/${id}`, { 
+      responseType: 'text'
+    }) as Observable<string>;
+  }
+
+  getFormularioData(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/formulario-data`);
+  }
+
+  // Local operations for UI
   getAllUsers(): User[] {
     return this.users.value;
   }
 
-  getUserById(id: number): User | undefined {
-    return this.users.value.find(user => user.id === id);
-  }
-
-  getUserByDocument(documento: string): User | undefined {
+  getUserByDocument(documento: number): User | undefined {
     return this.users.value.find(user => user.documento === documento);
   }
 
-  getUserByUsername(usuario: string): User | undefined {
-    return this.users.value.find(user => user.usuario === usuario);
+  getUserByUsername(nombreUsuario: string): User | undefined {
+    return this.users.value.find(user => user.nombreUsuario === nombreUsuario);
   }
 
-  createUser(userData: Omit<User, 'id' | 'fechaCreacion'>): User {
-    const currentUsers = this.users.value;
-    
-    // Validar documento único
-    if (this.getUserByDocument(userData.documento)) {
-      throw new Error('Ya existe un usuario con este documento');
-    }
-
-    // Validar nombre de usuario único
-    if (this.getUserByUsername(userData.usuario)) {
-      throw new Error('Ya existe un usuario con este nombre de usuario');
-    }
-
-    const newId = currentUsers.length > 0 ? Math.max(...currentUsers.map(u => u.id)) + 1 : 1;
-    
-    const newUser: User = {
-      ...userData,
-      id: newId,
-      fechaCreacion: new Date()
-    };
-
-    const updatedUsers = [...currentUsers, newUser];
-    this.users.next(updatedUsers);
-    this.saveUsersToStorage();
-    
-    return newUser;
-  }
-
-  updateUser(id: number, userData: Partial<User>): User | null {
-    const currentUsers = this.users.value;
-    const userIndex = currentUsers.findIndex(u => u.id === id);
-    
-    if (userIndex === -1) {
-      return null;
-    }
-
-    // Validar documento único (excepto el usuario actual)
-    if (userData.documento) {
-      const existingUser = this.getUserByDocument(userData.documento);
-      if (existingUser && existingUser.id !== id) {
-        throw new Error('Ya existe un usuario con este documento');
-      }
-    }
-
-    // Validar nombre de usuario único (excepto el usuario actual)
-    if (userData.usuario) {
-      const existingUser = this.getUserByUsername(userData.usuario);
-      if (existingUser && existingUser.id !== id) {
-        throw new Error('Ya existe un usuario con este nombre de usuario');
-      }
-    }
-
-    const updatedUser = { ...currentUsers[userIndex], ...userData, id };
-    currentUsers[userIndex] = updatedUser;
-    
-    this.users.next([...currentUsers]);
-    this.saveUsersToStorage();
-    
-    return updatedUser;
-  }
-
-  deleteUser(id: number): boolean {
-    const currentUsers = this.users.value;
-    const filteredUsers = currentUsers.filter(u => u.id !== id);
-    
-    if (filteredUsers.length === currentUsers.length) {
-      return false; // User not found
-    }
-
-    this.users.next(filteredUsers);
-    this.saveUsersToStorage();
-    return true;
-  }
-
-  // User Status Management
-  activateUser(id: number): boolean {
-    return this.updateUser(id, { estado: 'Activo' }) !== null;
-  }
-
-  deactivateUser(id: number): boolean {
-    return this.updateUser(id, { estado: 'Inactivo' }) !== null;
-  }
-
-  suspendUser(id: number): boolean {
-    return this.updateUser(id, { estado: 'Suspendido' }) !== null;
-  }
 
   // Search and Filter
   searchUsers(term: string): User[] {
@@ -163,62 +128,30 @@ export class UserService {
       user.nombre.toLowerCase().includes(searchTerm) ||
       user.primerApellido.toLowerCase().includes(searchTerm) ||
       user.segundoApellido.toLowerCase().includes(searchTerm) ||
-      user.documento.includes(term) ||
-      user.usuario.toLowerCase().includes(searchTerm) ||
-      user.email.toLowerCase().includes(searchTerm) ||
-      user.telefono.includes(term)
+      user.documento.toString().includes(term) ||
+      user.nombreUsuario.toLowerCase().includes(searchTerm) ||
+      user.telefono.toString().includes(term)
     );
   }
 
   getUsersByType(tipoUsuario: string): User[] {
     if (!tipoUsuario) return this.users.value;
-    return this.users.value.filter(user => user.tipoUsuario === tipoUsuario);
+    return this.users.value.filter(user => user.tipoUsuario.nombre === tipoUsuario);
   }
 
   getUsersByProfile(perfil: string): User[] {
     if (!perfil) return this.users.value;
-    return this.users.value.filter(user => user.perfil === perfil);
-  }
-
-  getUsersByStatus(estado: string): User[] {
-    if (!estado) return this.users.value;
-    return this.users.value.filter(user => user.estado === estado);
+    return this.users.value.filter(user => user.perfil.nombrePerfil === perfil);
   }
 
   // User Types Management
-  getAllUserTypes(): UserType[] {
+  getAllUserTypes(): TipoUsuario[] {
     return this.userTypes.value;
   }
 
-  createUserType(typeData: Omit<UserType, 'id'>): UserType {
-    const currentTypes = this.userTypes.value;
-    const newId = currentTypes.length > 0 ? Math.max(...currentTypes.map(t => t.id)) + 1 : 1;
-    
-    const newType: UserType = {
-      id: newId,
-      ...typeData
-    };
-
-    this.userTypes.next([...currentTypes, newType]);
-    return newType;
-  }
-
   // User Profiles Management
-  getAllUserProfiles(): UserProfile[] {
+  getAllUserProfiles(): Perfil[] {
     return this.userProfiles.value;
-  }
-
-  createUserProfile(profileData: Omit<UserProfile, 'id'>): UserProfile {
-    const currentProfiles = this.userProfiles.value;
-    const newId = currentProfiles.length > 0 ? Math.max(...currentProfiles.map(p => p.id)) + 1 : 1;
-    
-    const newProfile: UserProfile = {
-      id: newId,
-      ...profileData
-    };
-
-    this.userProfiles.next([...currentProfiles, newProfile]);
-    return newProfile;
   }
 
   // Statistics
@@ -226,12 +159,9 @@ export class UserService {
     const users = this.users.value;
     return {
       total: users.length,
-      activos: users.filter(u => u.estado === 'Activo').length,
-      inactivos: users.filter(u => u.estado === 'Inactivo').length,
-      suspendidos: users.filter(u => u.estado === 'Suspendido').length,
-      administradores: users.filter(u => u.tipoUsuario === 'Administrador').length,
-      empleados: users.filter(u => u.tipoUsuario === 'Empleado').length,
-      clientes: users.filter(u => u.tipoUsuario === 'Cliente').length
+      administradores: users.filter(u => u.tipoUsuario.nombre === 'Administrador').length,
+      empleados: users.filter(u => u.tipoUsuario.nombre === 'Empleado').length,
+      clientes: users.filter(u => u.tipoUsuario.nombre === 'Cliente').length
     };
   }
 
@@ -266,114 +196,64 @@ export class UserService {
     }
   }
 
+  // Load users from API and update local state
+  private loadInitialUsers(): void {
+    this.loadUsersFromAPI(0, 100).subscribe({
+      next: (response) => {
+        console.log('Initial users loaded from API:', response);
+        const users = response.content || response || [];
+        this.users.next(users);
+        if (users.length > 0) {
+          this.saveUsersToStorage(); // Save to local storage for fallback
+        }
+      },
+      error: (error) => {
+        console.error('Error loading users from API:', error);
+        this.loadUsersFromStorage(); // Fallback to local storage
+      }
+    });
+  }
+
   // Initialize default data
   private initializeDefaultData() {
-    // User Types
-    const defaultUserTypes: UserType[] = [
-      {
-        id: 1,
-        nombre: 'Administrador',
-        descripcion: 'Usuario con acceso completo al sistema'
+    // Intentar cargar datos desde la API primero
+    this.getFormularioData().subscribe({
+      next: (data) => {
+        console.log('Form data loaded from API in initialization:', data);
+        this.userTypes.next(data.tiposUsuario || []);
+        this.userProfiles.next(data.perfiles || []);
       },
-      {
-        id: 2,
-        nombre: 'Empleado',
-        descripcion: 'Usuario empleado con acceso limitado'
-      },
-      {
-        id: 3,
-        nombre: 'Cliente',
-        descripcion: 'Usuario cliente del sistema'
+      error: (error) => {
+        console.error('Error loading form data from API, using default data:', error);
+        // Fallback a datos por defecto si la API falla
+        const defaultUserTypes: TipoUsuario[] = [
+          { id: 1, nombre: 'Administrador' },
+          { id: 2, nombre: 'Empleado' },
+          { id: 3, nombre: 'Cliente' }
+        ];
+
+        const defaultUserProfiles: Perfil[] = [
+          { 
+            id: 1, 
+            nombrePerfil: 'Super Admin',
+            rol: { id: 1, nombre: 'Admin' }
+          },
+          { 
+            id: 2, 
+            nombrePerfil: 'Administrativo',
+            rol: { id: 2, nombre: 'Empleado' }
+          },
+          { 
+            id: 3, 
+            nombrePerfil: 'Básico',
+            rol: { id: 3, nombre: 'Cliente' }
+          }
+        ];
+
+        this.userTypes.next(defaultUserTypes);
+        this.userProfiles.next(defaultUserProfiles);
       }
-    ];
-
-    // User Profiles
-    const defaultUserProfiles: UserProfile[] = [
-      {
-        id: 1,
-        nombrePerfil: 'Super Admin',
-        permisos: ['create', 'read', 'update', 'delete', 'admin'],
-        descripcion: 'Acceso completo a todas las funciones'
-      },
-      {
-        id: 2,
-        nombrePerfil: 'Administrativo',
-        permisos: ['create', 'read', 'update'],
-        descripcion: 'Acceso para gestión administrativa'
-      },
-      {
-        id: 3,
-        nombrePerfil: 'Almacén',
-        permisos: ['read', 'update'],
-        descripcion: 'Acceso para gestión de inventario'
-      },
-      {
-        id: 4,
-        nombrePerfil: 'Básico',
-        permisos: ['read'],
-        descripcion: 'Acceso de solo lectura'
-      }
-    ];
-
-    // Default Users (only if no users exist)
-    if (this.users.value.length === 0) {
-      const defaultUsers: User[] = [
-        {
-          id: 1,
-          documento: '12345678',
-          nombre: 'Juan',
-          primerApellido: 'Pérez',
-          segundoApellido: 'García',
-          direccion: 'Calle 123 #45-67',
-          telefono: '300-123-4567',
-          email: 'juan.perez@example.com',
-          usuario: 'juan.perez',
-          tipoUsuario: 'Empleado',
-          perfil: 'Administrativo',
-          estado: 'Activo',
-          fechaCreacion: new Date('2024-01-15'),
-          fechaUltimoAcceso: new Date('2024-12-01')
-        },
-        {
-          id: 2,
-          documento: '87654321',
-          nombre: 'María',
-          primerApellido: 'González',
-          segundoApellido: 'López',
-          direccion: 'Carrera 45 #12-34',
-          telefono: '310-987-6543',
-          email: 'maria.gonzalez@example.com',
-          usuario: 'maria.gonzalez',
-          tipoUsuario: 'Cliente',
-          perfil: 'Básico',
-          estado: 'Activo',
-          fechaCreacion: new Date('2024-02-10'),
-          fechaUltimoAcceso: new Date('2024-11-30')
-        },
-        {
-          id: 3,
-          documento: '11223344',
-          nombre: 'Carlos',
-          primerApellido: 'Rodríguez',
-          segundoApellido: 'Martínez',
-          direccion: 'Avenida 67 #89-12',
-          telefono: '320-555-7890',
-          email: 'carlos.rodriguez@example.com',
-          usuario: 'carlos.rodriguez',
-          tipoUsuario: 'Administrador',
-          perfil: 'Super Admin',
-          estado: 'Activo',
-          fechaCreacion: new Date('2024-01-01'),
-          fechaUltimoAcceso: new Date('2024-12-02')
-        }
-      ];
-
-      this.users.next(defaultUsers);
-      this.saveUsersToStorage();
-    }
-
-    this.userTypes.next(defaultUserTypes);
-    this.userProfiles.next(defaultUserProfiles);
+    });
   }
 
   // Validation helpers
@@ -389,5 +269,61 @@ export class UserService {
 
   validateDocument(document: string): boolean {
     return document.length >= 6 && document.length <= 15 && /^[0-9]+$/.test(document);
+  }
+
+  // Helper method to check if response indicates an error
+  isErrorResponse(response: string): boolean {
+    if (!response) return false;
+    
+    return (
+      response.includes('Error:') || 
+      response.includes('error') || 
+      response.toLowerCase().includes('no se pudo') ||
+      response.toLowerCase().includes('ya existe')
+    );
+  }
+
+  // Helper method to extract error messages from backend responses
+  extractErrorMessage(error: any): string {
+    let errorMessage = 'Error en el servidor';
+    
+    console.log('Processing error:', error);
+    
+    // Si el error es un HttpErrorResponse (error HTTP)
+    if (error?.error) {
+      // Si el error.error es un string (respuesta de texto plano del backend)
+      if (typeof error.error === 'string') {
+        // Verificar si el string contiene JSON
+        try {
+          const parsedError = JSON.parse(error.error);
+          if (parsedError.message) {
+            errorMessage = parsedError.message;
+          } else if (typeof parsedError === 'string') {
+            errorMessage = parsedError;
+          } else {
+            errorMessage = error.error;
+          }
+        } catch {
+          // Si no es JSON válido, usar el string directamente
+          errorMessage = error.error;
+        }
+      } else if (error.error.message) {
+        errorMessage = error.error.message;
+      } else if (error.error.error) {
+        errorMessage = error.error.error;
+      } else if (error.error.details) {
+        errorMessage = error.error.details;
+      } else if (typeof error.error === 'object') {
+        // Si es un objeto, intentar stringificarlo de manera legible
+        errorMessage = JSON.stringify(error.error);
+      }
+    } else if (error?.message) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    console.log('Extracted error message:', errorMessage);
+    return errorMessage;
   }
 }

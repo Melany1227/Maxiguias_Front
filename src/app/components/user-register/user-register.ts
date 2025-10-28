@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService, User, UserType, UserProfile } from '../../services/user.service';
+import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,8 +14,8 @@ import { Subscription } from 'rxjs';
 export class UserRegister implements OnInit, OnDestroy {
   
   registerForm!: FormGroup;
-  userTypes: UserType[] = [];
-  userProfiles: UserProfile[] = [];
+  userTypes: TipoUsuario[] = [];
+  userProfiles: Perfil[] = [];
   mensajeModal: string = '';
   tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
@@ -46,11 +46,11 @@ export class UserRegister implements OnInit, OnDestroy {
         Validators.pattern(/^[0-9]+$/)
       ]],
       nombre: ['', [Validators.required, Validators.minLength(2)]],
-      primerApellido: ['', [Validators.required, Validators.minLength(2)]],
+      primerApellido: [''],
       segundoApellido: [''],
       direccion: ['', Validators.required],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9\-\+\s\(\)]{10,}$/)]],
-      email: ['', [Validators.required, Validators.email]],
+      correo: ['', [Validators.required, Validators.email]],
       usuario: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
@@ -102,25 +102,39 @@ export class UserRegister implements OnInit, OnDestroy {
           segundoApellido: formValue.segundoApellido || '',
           direccion: formValue.direccion,
           telefono: formValue.telefono,
-          email: formValue.email,
-          usuario: formValue.usuario,
-          password: formValue.password,
-          tipoUsuario: 'Cliente' as const, // Force Cliente for registration
-          perfil: 'Básico', // Force Básico for registration
-          estado: 'Activo' as const
+          correo: formValue.correo,
+          nombreUsuario: formValue.usuario,
+          contrasena: formValue.password,
+          tipoUsuario: { id: 3, nombre: 'Cliente' },
+          perfil: { id: 3, nombrePerfil: 'Básico', rol: { id: 3, nombre: 'Cliente' } },
+          ciudad: { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } }
         };
 
-        const newUser = this.userService.createUser(userData);
-        
-        this.mensajeModal = `¡Registro exitoso! Bienvenido ${newUser.nombre} ${newUser.primerApellido}. Ya puedes iniciar sesión.`;
-        this.tipoMensaje = 'success';
-        
-        // Clear form after successful registration
-        this.registerForm.reset();
-        
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 3000);
+        this.userService.createUser(userData).subscribe({
+          next: (response) => {
+            console.log('Response from backend:', response);
+            // Verificar si la respuesta indica un error
+            if (this.userService.isErrorResponse(response)) {
+              this.mensajeModal = response;
+              this.tipoMensaje = 'error';
+            } else {
+              this.mensajeModal = response || '¡Registro exitoso! Ya puedes iniciar sesión.';
+              this.tipoMensaje = 'success';
+              
+              // Clear form after successful registration
+              this.registerForm.reset();
+              
+              setTimeout(() => {
+                this.router.navigate(['/login']);
+              }, 3000);
+            }
+          },
+          error: (error) => {
+            this.mensajeModal = this.userService.extractErrorMessage(error);
+            this.tipoMensaje = 'error';
+            console.error('Error completo:', error);
+          }
+        });
 
       } catch (error: any) {
         this.mensajeModal = error.message || 'Error al registrar el usuario';
@@ -162,7 +176,7 @@ export class UserRegister implements OnInit, OnDestroy {
     const control = this.registerForm.get(fieldName);
     if (control && control.errors && control.touched) {
       if (control.errors['required']) return `${this.getFieldLabel(fieldName)} es requerido`;
-      if (control.errors['email']) return 'Email inválido';
+      if (control.errors['email']) return 'Correo inválido';
       if (control.errors['minlength']) return `${this.getFieldLabel(fieldName)} debe tener al menos ${control.errors['minlength'].requiredLength} caracteres`;
       if (control.errors['maxlength']) return `${this.getFieldLabel(fieldName)} no puede tener más de ${control.errors['maxlength'].requiredLength} caracteres`;
       if (control.errors['pattern']) {
@@ -188,7 +202,7 @@ export class UserRegister implements OnInit, OnDestroy {
       segundoApellido: 'Segundo apellido',
       direccion: 'Dirección',
       telefono: 'Teléfono',
-      email: 'Email',
+      correo: 'Correo',
       usuario: 'Usuario',
       password: 'Contraseña',
       confirmPassword: 'Confirmar contraseña',
