@@ -1,54 +1,55 @@
 <div class="orders-container">
   <!-- Header -->
-  <div class="orders-header">
-    <h2>
-      <i class="fa-solid fa-clipboard-list"></i>
-      Lista de Pedidos
-    </h2>
-    <button class="btn-create-order" (click)="createNewOrder()">
-      <i class="fa-solid fa-plus"></i>
-      Nuevo Pedido
-    </button>
+  <div class="admin-header">
+    <h1>Gestión de Pedidos</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="createNewOrder()">
+        <i class="icon">📋</i>
+        Nuevo Pedido
+      </button>
+    </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filters-container">
-    <div class="search-container">
-      <i class="fa-solid fa-search search-icon"></i>
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-box">
       <input 
         type="text" 
-        [(ngModel)]="searchTerm" 
-        (input)="applyFilters()" 
+        class="form-control" 
         placeholder="Buscar por cliente, email o ID..." 
-        class="search-input">
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      >
+      <i class="search-icon">🔍</i>
     </div>
-    
-    <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="filter-select">
-      <option *ngFor="let status of statusOptions" [value]="status.value">{{status.label}}</option>
-    </select>
-    
-    <select [(ngModel)]="sortBy" (change)="sortOrders()" class="filter-select">
-      <option value="date">Ordenar por fecha</option>
-      <option value="customer">Ordenar por cliente</option>
-      <option value="total">Ordenar por total</option>
-      <option value="status">Ordenar por estado</option>
-    </select>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <select class="form-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+        <option *ngFor="let status of statusOptions" [value]="status.value">{{status.label}}</option>
+      </select>
+      
+      <select class="form-select" [(ngModel)]="sortBy" (change)="sortOrders()">
+        <option value="date">Ordenar por Fecha</option>
+        <option value="customer">Ordenar por Cliente</option>
+        <option value="total">Ordenar por Total</option>
+        <option value="status">Ordenar por Estado</option>
+      </select>
+    </div>
   </div>
 
   <!-- Empty State -->
-  <div class="empty-orders" *ngIf="filteredOrders.length === 0 && orders.length === 0">
-    <i class="fa-solid fa-clipboard-list"></i>
+  <div class="empty-state" *ngIf="filteredOrders.length === 0 && orders.length === 0">
+    <div class="empty-icon">📋</div>
     <h3>No hay pedidos</h3>
     <p>Aún no se han creado pedidos. ¡Comienza creando tu primer pedido!</p>
-    <button class="btn-create-first-order" (click)="createNewOrder()">
-      <i class="fa-solid fa-plus"></i>
-      Crear primer pedido
-    </button>
   </div>
 
   <!-- No Results -->
-  <div class="no-results" *ngIf="filteredOrders.length === 0 && orders.length > 0">
-    <i class="fa-solid fa-search"></i>
+  <div class="empty-state" *ngIf="filteredOrders.length === 0 && orders.length > 0">
+    <div class="empty-icon">🔍</div>
     <h3>No se encontraron pedidos</h3>
     <p>Intenta con otros términos de búsqueda o filtros</p>
   </div>
@@ -71,16 +72,13 @@
       <div class="order-content">
         <div class="customer-info">
           <h4>
-            <i class="fa-solid fa-user"></i>
-            {{order.customerName}}
+            👤 {{order.customerName}}
           </h4>
           <p class="customer-contact">
-            <i class="fa-solid fa-envelope"></i>
-            {{order.customerEmail}}
+            ✉️ {{order.customerEmail}}
           </p>
           <p class="customer-contact">
-            <i class="fa-solid fa-phone"></i>
-            {{order.customerPhone}}
+            📞 {{order.customerPhone}}
           </p>
         </div>
 
@@ -125,16 +123,14 @@
           </select>
         </div>
         
-        <button class="btn-view-order" (click)="viewOrder(order.id)">
-          <i class="fa-solid fa-eye"></i>
-          Ver detalles
+        <button class="btn-action btn-view" (click)="viewOrder(order.id)">
+          👁️
         </button>
       </div>
 
       <div class="order-notes" *ngIf="order.notes">
         <p>
-          <i class="fa-solid fa-sticky-note"></i>
-          <strong>Notas:</strong> {{order.notes}}
+          📝 <strong>Notas:</strong> {{order.notes}}
         </p>
       </div>
     </div>

@@ -1,30 +1,29 @@
 .cart-container {
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 24px;
+  max-width: 1400px;
   margin: 0 auto;
   min-height: 70vh;
 }
 
 /* Header */
-.cart-header {
+.admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 24px;
 }
 
-.cart-header h2 {
-  color: #2c3e50;
-  font-size: 1.75rem;
+.admin-header h1 {
+  color: #1f2937;
+  font-size: 28px;
   font-weight: 700;
   margin: 0;
 }
 
-.cart-header h2 i {
-  color: #3498db;
-  margin-right: 0.5rem;
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .cart-summary {
@@ -43,6 +42,81 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #27ae60;
+}
+
+/* Button Styles */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+  border-color: #6b7280;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
+.btn-info {
+  background: #06b6d4;
+  color: white;
+  border-color: #06b6d4;
+}
+
+.btn-info:hover {
+  background: #0891b2;
+}
+
+.icon {
+  font-size: 16px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  color: #374151;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 0 0 24px 0;
+  color: #9ca3af;
 }
 
 /* Empty Cart */
