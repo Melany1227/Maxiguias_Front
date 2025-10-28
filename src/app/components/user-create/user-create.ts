@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
+import { UserService, User, TipoUsuario, Perfil, Departamento, Ciudad } from '../../services/user.service';
+import { LocationService } from '../../services/location.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,6 +17,9 @@ export class UserCreate implements OnInit, OnDestroy {
   userForm!: FormGroup;
   userTypes: TipoUsuario[] = [];
   userProfiles: Perfil[] = [];
+  departamentos: Departamento[] = [];
+  ciudades: Ciudad[] = [];
+  ciudadesFiltradas: Ciudad[] = [];
   mensajeModal: string = '';
   tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
@@ -25,6 +29,7 @@ export class UserCreate implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private locationService: LocationService,
     private router: Router
   ) {}
 
@@ -54,7 +59,9 @@ export class UserCreate implements OnInit, OnDestroy {
       usuario: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       tipoUsuario: ['', Validators.required],
-      perfil: ['', Validators.required]
+      perfil: ['', Validators.required],
+      departamento: ['', Validators.required],
+      ciudad: ['', Validators.required]
     });
   }
 
@@ -84,6 +91,66 @@ export class UserCreate implements OnInit, OnDestroy {
         );
       }
     });
+
+    // Load location data always
+    this.loadLocationData();
+  }
+
+  loadLocationData() {
+    this.subscription.add(
+      this.locationService.departamentos$.subscribe(departamentos => {
+        this.departamentos = departamentos;
+      })
+    );
+
+    this.subscription.add(
+      this.locationService.ciudades$.subscribe(ciudades => {
+        this.ciudades = ciudades;
+        this.ciudadesFiltradas = [];
+      })
+    );
+  }
+
+  onDepartamentoChange() {
+    const departamentoId = this.userForm.get('departamento')?.value;
+    console.log('Departamento seleccionado:', departamentoId);
+    
+    if (departamentoId) {
+      // Convert to number if it's a string
+      const deptId = typeof departamentoId === 'string' ? parseInt(departamentoId) : departamentoId;
+      
+      // Load cities from API based on selected department
+      this.subscription.add(
+        this.locationService.getCiudadesByDepartamento(deptId).subscribe({
+          next: (ciudades) => {
+            console.log('Ciudades cargadas para departamento', deptId, ':', ciudades);
+            this.ciudadesFiltradas = ciudades;
+          },
+          error: (error) => {
+            console.error('Error loading cities for department:', error);
+            // Fallback to local filter
+            this.ciudadesFiltradas = this.locationService.getCiudadesByDepartamentoLocal(deptId);
+          }
+        })
+      );
+      
+      this.userForm.get('ciudad')?.setValue('');
+    } else {
+      this.ciudadesFiltradas = [];
+      this.userForm.get('ciudad')?.setValue('');
+    }
+  }
+
+  getSelectedCiudad(): Ciudad {
+    const ciudadId = this.userForm.get('ciudad')?.value;
+    if (ciudadId) {
+      const ciudad = this.locationService.getCiudadById(ciudadId);
+      if (ciudad) {
+        return ciudad;
+      }
+    }
+    // Fallback to default city if nothing selected
+    return { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } };
   }
 
   onSubmit() {
@@ -110,6 +177,21 @@ export class UserCreate implements OnInit, OnDestroy {
         if (!selectedPerfil) {
           throw new Error('Perfil no válido');
         }
+
+        // Validate department and city selection
+        const departamentoId = formValue.departamento;
+        const ciudadId = formValue.ciudad;
+        
+        if (!departamentoId) {
+          throw new Error('Debe seleccionar un departamento');
+        }
+        
+        if (!ciudadId) {
+          throw new Error('Debe seleccionar una ciudad');
+        }
+        
+        const selectedCiudad = this.getSelectedCiudad();
+        console.log('Selected ciudad:', selectedCiudad);
         
         const userData = {
           documento: formValue.documento,
@@ -123,7 +205,7 @@ export class UserCreate implements OnInit, OnDestroy {
           contrasena: formValue.password,
           tipoUsuario: selectedTipoUsuario,
           perfil: selectedPerfil,
-          ciudad: { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } }
+          ciudad: selectedCiudad
         };
 
         this.userService.createUser(userData).subscribe({
@@ -185,7 +267,22 @@ export class UserCreate implements OnInit, OnDestroy {
   getFieldError(fieldName: string): string {
     const control = this.userForm.get(fieldName);
     if (control && control.errors && control.touched) {
-      if (control.errors['required']) return `${fieldName} es requerido`;
+      if (control.errors['required']) {
+        const fieldLabels: { [key: string]: string } = {
+          documento: 'Documento',
+          nombre: 'Nombre',
+          direccion: 'Dirección',
+          telefono: 'Teléfono',
+          correo: 'Correo',
+          usuario: 'Usuario',
+          password: 'Contraseña',
+          tipoUsuario: 'Tipo de usuario',
+          perfil: 'Perfil',
+          departamento: 'Departamento',
+          ciudad: 'Ciudad'
+        };
+        return `${fieldLabels[fieldName] || fieldName} es requerido`;
+      }
       if (control.errors['email']) return 'Correo inválido';
       if (control.errors['minlength']) return `${fieldName} debe tener al menos ${control.errors['minlength'].requiredLength} caracteres`;
       if (control.errors['maxlength']) return `${fieldName} no puede tener más de ${control.errors['maxlength'].requiredLength} caracteres`;

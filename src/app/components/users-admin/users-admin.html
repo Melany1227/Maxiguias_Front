@@ -7,19 +7,10 @@
         <i class="icon">👤</i>
         Crear Usuario
       </button>
-      <button class="btn btn-secondary" (click)="exportUsers()">
-        <i class="icon">📤</i>
-        Exportar
-      </button>
       <button class="btn btn-info" (click)="refreshUsers()">
         <i class="icon">🔄</i>
         Refrescar
       </button>
-      <label class="btn btn-outline-secondary">
-        <i class="icon">📥</i>
-        Importar
-        <input type="file" accept=".json" (change)="importUsers($event)" hidden>
-      </label>
     </div>
   </div>
 
@@ -29,35 +20,32 @@
       <div class="stat-number">{{ userStats.total }}</div>
       <div class="stat-label">Total Usuarios</div>
     </div>
-    <div class="stat-card type-admin">
-      <div class="stat-number">{{ userStats.administradores }}</div>
-      <div class="stat-label">Administradores</div>
-    </div>
-    <div class="stat-card type-employee">
-      <div class="stat-number">{{ userStats.empleados }}</div>
-      <div class="stat-label">Empleados</div>
-    </div>
-    <div class="stat-card type-client">
-      <div class="stat-number">{{ userStats.clientes }}</div>
-      <div class="stat-label">Clientes</div>
+    <div class="stat-card" 
+         *ngFor="let type of userStats.types" 
+         [ngClass]="'type-' + type.nombre.toLowerCase()">
+      <div class="stat-number">{{ type.count }}</div>
+      <div class="stat-label">{{ type.nombre }}</div>
     </div>
   </div>
 
-  <!-- Filters -->
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Buscar usuarios..." 
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        (input)="applyFilters()"
+      >
+      <i class="search-icon">🔍</i>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
   <div class="filters-section">
     <div class="filters-row">
-      <div class="search-box">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Buscar usuarios..." 
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearchChange()"
-          (input)="applyFilters()"
-        >
-        <i class="search-icon">🔍</i>
-      </div>
-      
       <select class="form-select" [(ngModel)]="selectedUserType" (change)="applyFilters()">
         <option value="">Todos los tipos</option>
         <option *ngFor="let type of userTypes" [value]="type.nombre">
@@ -88,7 +76,6 @@
     <table class="users-table">
       <thead>
         <tr>
-          <th>Avatar</th>
           <th>Documento</th>
           <th>Nombre Completo</th>
           <th>Usuario</th>
@@ -102,13 +89,6 @@
       </thead>
       <tbody>
         <tr *ngFor="let user of filteredUsers" class="user-row">
-          <td class="avatar-cell">
-            <div class="user-avatar">
-              <div class="avatar-placeholder">
-                {{ user.nombre ? user.nombre.charAt(0) : '' }}{{ user.primerApellido ? user.primerApellido.charAt(0) : '' }}
-              </div>
-            </div>
-          </td>
           <td>{{ user.documento }}</td>
           <td class="name-cell">
             <div class="user-name">{{ getFullName(user) }}</div>

@@ -16,7 +16,10 @@ export class UsersAdmin implements OnInit, OnDestroy {
   filteredUsers: User[] = [];
   userTypes: TipoUsuario[] = [];
   userProfiles: Perfil[] = [];
-  userStats: any = {};
+  userStats: any = {
+    total: 0,
+    types: []
+  };
   
   searchTerm: string = '';
   selectedUserType: string = '';
@@ -41,7 +44,14 @@ export class UsersAdmin implements OnInit, OnDestroy {
         console.log('Users received:', users);
         this.users = users;
         this.applyFilters();
-        this.userStats = this.userService.getUserStats();
+      })
+    );
+
+    // Subscribe to stats updates
+    this.subscription.add(
+      this.userService.getUserStats$().subscribe(stats => {
+        console.log('Stats received in component:', stats);
+        this.userStats = stats;
       })
     );
 
@@ -186,33 +196,7 @@ export class UsersAdmin implements OnInit, OnDestroy {
   }
 
 
-  exportUsers() {
-    const users = this.userService.exportUsers();
-    const dataStr = JSON.stringify(users, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = 'usuarios.json';
-    link.click();
-  }
 
-  importUsers(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const users = JSON.parse(e.target?.result as string);
-          this.userService.importUsers(users);
-          alert('Usuarios importados exitosamente');
-        } catch (error) {
-          alert('Error al importar usuarios: archivo inválido');
-        }
-      };
-      reader.readAsText(file);
-    }
-  }
 
   getUserTypeClass(tipo: string): string {
     switch (tipo) {

@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
+import { UserService, User, TipoUsuario, Perfil, Departamento, Ciudad } from '../../services/user.service';
+import { LocationService } from '../../services/location.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,6 +17,9 @@ export class UserEdit implements OnInit, OnDestroy {
   userForm!: FormGroup;
   userTypes: TipoUsuario[] = [];
   userProfiles: Perfil[] = [];
+  departamentos: Departamento[] = [];
+  ciudades: Ciudad[] = [];
+  ciudadesFiltradas: Ciudad[] = [];
   mensajeModal: string = '';
   tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
@@ -29,6 +33,7 @@ export class UserEdit implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private locationService: LocationService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -60,7 +65,9 @@ export class UserEdit implements OnInit, OnDestroy {
       usuario: ['', [Validators.required, Validators.minLength(3)]],
       password: [''], // No required for editing
       tipoUsuario: ['', Validators.required],
-      perfil: ['', Validators.required]
+      perfil: ['', Validators.required],
+      departamento: ['', Validators.required],
+      ciudad: ['', Validators.required]
     });
   }
 
@@ -88,6 +95,154 @@ export class UserEdit implements OnInit, OnDestroy {
         );
       }
     });
+
+    // Load location data always
+    this.loadLocationData();
+  }
+
+  loadLocationData() {
+    this.subscription.add(
+      this.locationService.departamentos$.subscribe(departamentos => {
+        this.departamentos = departamentos;
+        // If we have user data and location data, populate the form
+        if (this.currentUser && departamentos.length > 0) {
+          this.populateLocationFields();
+        }
+      })
+    );
+
+    this.subscription.add(
+      this.locationService.ciudades$.subscribe(ciudades => {
+        this.ciudades = ciudades;
+        // If we have user data and location data, populate the form
+        if (this.currentUser && ciudades.length > 0 && this.departamentos.length > 0) {
+          this.populateLocationFields();
+        }
+      })
+    );
+  }
+
+  populateLocationFields() {
+    if (this.currentUser?.ciudad?.id && this.ciudades.length > 0) {
+      const departamento = this.locationService.getDepartamentoByCiudadId(this.currentUser.ciudad.id);
+      console.log('Found department for city:', departamento);
+      console.log('Current user city ID:', this.currentUser.ciudad.id);
+      
+      if (departamento) {
+        // First set the department
+        this.userForm.patchValue({
+          departamento: departamento.id
+        });
+        
+        // Load cities for this department
+        this.subscription.add(
+          this.locationService.getCiudadesByDepartamento(departamento.id).subscribe({
+            next: (ciudades) => {
+              console.log('Cities loaded for department:', ciudades);
+              this.ciudadesFiltradas = ciudades;
+              
+              // Verify the city exists in the loaded cities
+              const cityExists = ciudades.find(c => c.id === this.currentUser?.ciudad?.id);
+              console.log('City exists in loaded cities:', cityExists);
+              console.log('All city IDs:', ciudades.map(c => c.id));
+              console.log('Looking for city ID:', this.currentUser?.ciudad?.id);
+              console.log('City ID type:', typeof this.currentUser?.ciudad?.id);
+              
+              // Now set the city after cities are loaded
+              console.log('Setting city value to:', this.currentUser?.ciudad?.id);
+              this.userForm.patchValue({
+                ciudad: this.currentUser?.ciudad?.id
+              });
+              
+              // Force change detection
+              this.userForm.get('ciudad')?.updateValueAndValidity();
+              
+              // Log final form values
+              console.log('Final form values:', this.userForm.value);
+            },
+            error: (error) => {
+              console.error('Error loading cities for department:', error);
+              this.ciudadesFiltradas = this.locationService.getCiudadesByDepartamentoLocal(departamento.id);
+              
+              // Set city even with fallback data
+              console.log('Setting city value (fallback) to:', this.currentUser?.ciudad?.id);
+              this.userForm.patchValue({
+                ciudad: this.currentUser?.ciudad?.id
+              });
+              
+              // Force change detection
+              this.userForm.get('ciudad')?.updateValueAndValidity();
+            }
+          })
+        );
+      }
+    }
+  }
+
+  onDepartamentoChange() {
+    const departamentoId = this.userForm.get('departamento')?.value;
+    console.log('Departamento seleccionado (edit):', departamentoId);
+    
+    if (departamentoId) {
+      // Convert to number if it's a string
+      const deptId = typeof departamentoId === 'string' ? parseInt(departamentoId) : departamentoId;
+      
+      // Load cities from API based on selected department
+      this.subscription.add(
+        this.locationService.getCiudadesByDepartamento(deptId).subscribe({
+          next: (ciudades) => {
+            console.log('Ciudades cargadas para departamento', deptId, ':', ciudades);
+            this.ciudadesFiltradas = ciudades;
+          },
+          error: (error) => {
+            console.error('Error loading cities for department:', error);
+            // Fallback to local filter
+            this.ciudadesFiltradas = this.locationService.getCiudadesByDepartamentoLocal(deptId);
+          }
+        })
+      );
+      
+      this.userForm.get('ciudad')?.setValue('');
+    } else {
+      this.ciudadesFiltradas = [];
+      this.userForm.get('ciudad')?.setValue('');
+    }
+  }
+
+  getSelectedCiudad(): Ciudad {
+    const ciudadId = this.userForm.get('ciudad')?.value;
+    console.log('getSelectedCiudad - Form ciudad value:', ciudadId);
+    console.log('getSelectedCiudad - Type of ciudad value:', typeof ciudadId);
+    
+    if (ciudadId) {
+      // Convert to number if it's a string
+      const cityId = typeof ciudadId === 'string' ? parseInt(ciudadId) : ciudadId;
+      console.log('getSelectedCiudad - Converted cityId:', cityId);
+      
+      // Try to find in filtered cities first (more accurate)
+      let ciudad = this.ciudadesFiltradas.find(c => c.id === cityId);
+      console.log('getSelectedCiudad - Found in filtered cities:', ciudad);
+      
+      // If not found in filtered, try all cities
+      if (!ciudad) {
+        ciudad = this.locationService.getCiudadById(cityId);
+        console.log('getSelectedCiudad - Found in all cities:', ciudad);
+      }
+      
+      if (ciudad) {
+        return ciudad;
+      }
+    }
+    
+    // Fallback: Return current user's city only if no form value
+    console.log('getSelectedCiudad - Using fallback to current user city');
+    if (this.currentUser?.ciudad) {
+      return this.currentUser.ciudad;
+    }
+    
+    // Final fallback to default city
+    console.log('getSelectedCiudad - Using final fallback');
+    return { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } };
   }
 
   loadUser() {
@@ -99,6 +254,10 @@ export class UserEdit implements OnInit, OnDestroy {
           next: (user) => {
             this.currentUser = user;
             this.populateForm();
+            // If location data is already loaded, populate location fields
+            if (this.departamentos.length > 0 && this.ciudades.length > 0) {
+              this.populateLocationFields();
+            }
             this.isLoading = false;
           },
           error: (error) => {
@@ -115,6 +274,10 @@ export class UserEdit implements OnInit, OnDestroy {
 
   populateForm() {
     if (this.currentUser) {
+      console.log('Current user data:', this.currentUser);
+      console.log('Current user ciudad:', this.currentUser.ciudad);
+      
+      // Populate basic fields (location fields handled separately)
       this.userForm.patchValue({
         documento: this.currentUser.documento,
         nombre: this.currentUser.nombre,
@@ -127,6 +290,11 @@ export class UserEdit implements OnInit, OnDestroy {
         tipoUsuario: this.currentUser.tipoUsuario.nombre,
         perfil: this.currentUser.perfil.nombrePerfil
       });
+      
+      // Location fields will be populated by populateLocationFields when data is ready
+      if (this.departamentos.length > 0 && this.ciudades.length > 0) {
+        this.populateLocationFields();
+      }
     }
   }
 
@@ -148,6 +316,23 @@ export class UserEdit implements OnInit, OnDestroy {
         if (!selectedPerfil) {
           throw new Error('Perfil no válido');
         }
+
+        // Validate department and city selection
+        const departamentoId = formValue.departamento;
+        const ciudadId = formValue.ciudad;
+        
+        if (!departamentoId) {
+          throw new Error('Debe seleccionar un departamento');
+        }
+        
+        if (!ciudadId) {
+          throw new Error('Debe seleccionar una ciudad');
+        }
+        
+        const selectedCiudad = this.getSelectedCiudad();
+        console.log('Selected ciudad for update:', selectedCiudad);
+        console.log('Form departamento value:', formValue.departamento);
+        console.log('Form ciudad value:', formValue.ciudad);
         
         const userData: Partial<User> = {
           documento: formValue.documento,
@@ -159,7 +344,8 @@ export class UserEdit implements OnInit, OnDestroy {
           correo: formValue.correo,
           nombreUsuario: formValue.usuario,
           tipoUsuario: selectedTipoUsuario,
-          perfil: selectedPerfil
+          perfil: selectedPerfil,
+          ciudad: selectedCiudad
         };
 
         // Only include password if it was provided
@@ -215,7 +401,22 @@ export class UserEdit implements OnInit, OnDestroy {
   getFieldError(fieldName: string): string {
     const control = this.userForm.get(fieldName);
     if (control && control.errors && control.touched) {
-      if (control.errors['required']) return `${fieldName} es requerido`;
+      if (control.errors['required']) {
+        const fieldLabels: { [key: string]: string } = {
+          documento: 'Documento',
+          nombre: 'Nombre',
+          direccion: 'Dirección',
+          telefono: 'Teléfono',
+          correo: 'Correo',
+          usuario: 'Usuario',
+          password: 'Contraseña',
+          tipoUsuario: 'Tipo de usuario',
+          perfil: 'Perfil',
+          departamento: 'Departamento',
+          ciudad: 'Ciudad'
+        };
+        return `${fieldLabels[fieldName] || fieldName} es requerido`;
+      }
       if (control.errors['email']) return 'Correo inválido';
       if (control.errors['minlength']) return `${fieldName} debe tener al menos ${control.errors['minlength'].requiredLength} caracteres`;
       if (control.errors['maxlength']) return `${fieldName} no puede tener más de ${control.errors['maxlength'].requiredLength} caracteres`;

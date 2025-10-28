@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 export interface User {
@@ -154,15 +155,43 @@ export class UserService {
     return this.userProfiles.value;
   }
 
-  // Statistics
+  // Statistics - Dynamic based on actual user types
   getUserStats() {
     const users = this.users.value;
-    return {
+    const userTypes = this.userTypes.value;
+    console.log('Calculating dynamic stats for users:', users.length);
+    console.log('Available user types:', userTypes);
+    
+    const stats = {
       total: users.length,
-      administradores: users.filter(u => u.tipoUsuario.nombre === 'Administrador').length,
-      empleados: users.filter(u => u.tipoUsuario.nombre === 'Empleado').length,
-      clientes: users.filter(u => u.tipoUsuario.nombre === 'Cliente').length
+      types: userTypes.map(type => ({
+        id: type.id,
+        nombre: type.nombre,
+        count: users.filter(u => u.tipoUsuario?.nombre === type.nombre).length
+      }))
     };
+    
+    console.log('Dynamic user stats calculated:', stats);
+    return stats;
+  }
+
+  // Observable for stats that updates automatically when users or user types change
+  getUserStats$() {
+    return this.users$.pipe(
+      map(users => {
+        const userTypes = this.userTypes.value;
+        const stats = {
+          total: users.length,
+          types: userTypes.map(type => ({
+            id: type.id,
+            nombre: type.nombre,
+            count: users.filter(u => u.tipoUsuario?.nombre === type.nombre).length
+          }))
+        };
+        console.log('Dynamic stats updated via Observable:', stats);
+        return stats;
+      })
+    );
   }
 
   // Bulk Operations

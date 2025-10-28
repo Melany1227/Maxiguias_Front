@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
+import { UserService, User, TipoUsuario, Perfil, Departamento, Ciudad } from '../../services/user.service';
+import { LocationService } from '../../services/location.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,6 +17,9 @@ export class UserRegister implements OnInit, OnDestroy {
   registerForm!: FormGroup;
   userTypes: TipoUsuario[] = [];
   userProfiles: Perfil[] = [];
+  departamentos: Departamento[] = [];
+  ciudades: Ciudad[] = [];
+  ciudadesFiltradas: Ciudad[] = [];
   mensajeModal: string = '';
   tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
@@ -25,6 +29,7 @@ export class UserRegister implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private locationService: LocationService,
     private router: Router
   ) {}
 
@@ -56,7 +61,9 @@ export class UserRegister implements OnInit, OnDestroy {
       confirmPassword: ['', [Validators.required]],
       tipoUsuario: ['Cliente', Validators.required], // Default to Cliente for registration
       perfil: ['Básico', Validators.required], // Default to Básico for registration
-      acceptTerms: [false, Validators.requiredTrue]
+      acceptTerms: [false, Validators.requiredTrue],
+      departamento: ['', Validators.required],
+      ciudad: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -87,6 +94,66 @@ export class UserRegister implements OnInit, OnDestroy {
         );
       })
     );
+
+    // Load location data
+    this.loadLocationData();
+  }
+
+  loadLocationData() {
+    this.subscription.add(
+      this.locationService.departamentos$.subscribe(departamentos => {
+        this.departamentos = departamentos;
+      })
+    );
+
+    this.subscription.add(
+      this.locationService.ciudades$.subscribe(ciudades => {
+        this.ciudades = ciudades;
+        this.ciudadesFiltradas = [];
+      })
+    );
+  }
+
+  onDepartamentoChange() {
+    const departamentoId = this.registerForm.get('departamento')?.value;
+    console.log('Departamento seleccionado (register):', departamentoId);
+    
+    if (departamentoId) {
+      // Convert to number if it's a string
+      const deptId = typeof departamentoId === 'string' ? parseInt(departamentoId) : departamentoId;
+      
+      // Load cities from API based on selected department
+      this.subscription.add(
+        this.locationService.getCiudadesByDepartamento(deptId).subscribe({
+          next: (ciudades) => {
+            console.log('Ciudades cargadas para departamento', deptId, ':', ciudades);
+            this.ciudadesFiltradas = ciudades;
+          },
+          error: (error) => {
+            console.error('Error loading cities for department:', error);
+            // Fallback to local filter
+            this.ciudadesFiltradas = this.locationService.getCiudadesByDepartamentoLocal(deptId);
+          }
+        })
+      );
+      
+      this.registerForm.get('ciudad')?.setValue('');
+    } else {
+      this.ciudadesFiltradas = [];
+      this.registerForm.get('ciudad')?.setValue('');
+    }
+  }
+
+  getSelectedCiudad(): Ciudad {
+    const ciudadId = this.registerForm.get('ciudad')?.value;
+    if (ciudadId) {
+      const ciudad = this.locationService.getCiudadById(ciudadId);
+      if (ciudad) {
+        return ciudad;
+      }
+    }
+    // Fallback to default city if nothing selected
+    return { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } };
   }
 
   onSubmit() {
@@ -95,6 +162,21 @@ export class UserRegister implements OnInit, OnDestroy {
       
       try {
         const formValue = this.registerForm.value;
+
+        // Validate department and city selection
+        const departamentoId = formValue.departamento;
+        const ciudadId = formValue.ciudad;
+        
+        if (!departamentoId) {
+          throw new Error('Debe seleccionar un departamento');
+        }
+        
+        if (!ciudadId) {
+          throw new Error('Debe seleccionar una ciudad');
+        }
+        const selectedCiudad = this.getSelectedCiudad();
+        console.log('Selected ciudad for registration:', selectedCiudad);
+        
         const userData = {
           documento: formValue.documento,
           nombre: formValue.nombre,
@@ -107,7 +189,7 @@ export class UserRegister implements OnInit, OnDestroy {
           contrasena: formValue.password,
           tipoUsuario: { id: 3, nombre: 'Cliente' },
           perfil: { id: 3, nombrePerfil: 'Básico', rol: { id: 3, nombre: 'Cliente' } },
-          ciudad: { id: 1, nombre: 'Bogotá', departamento: { id: 1, nombre: 'Cundinamarca' } }
+          ciudad: selectedCiudad
         };
 
         this.userService.createUser(userData).subscribe({
@@ -206,7 +288,9 @@ export class UserRegister implements OnInit, OnDestroy {
       usuario: 'Usuario',
       password: 'Contraseña',
       confirmPassword: 'Confirmar contraseña',
-      acceptTerms: 'Términos y condiciones'
+      acceptTerms: 'Términos y condiciones',
+      departamento: 'Departamento',
+      ciudad: 'Ciudad'
     };
     return labels[fieldName] || fieldName;
   }
