@@ -1,255 +1,232 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Product } from './cart.service';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+
+export interface Terminado {
+  id?: number;
+  medidaTerminadoProducto: number;
+  precioPublico: number;
+  precioPorMayor: number;
+  precioPorEncargo: number;
+  gananciaXMayor?: number;
+  gananciaXEncargo?: number;
+}
+
+export interface ProductoBackend {
+  id: number;
+  nombre: string;
+  imagen?: string;
+  cantidadDisponible?: number;
+  terminados: Terminado[];
+}
+
+export interface TerminadoCreateRequest {
+  id?: number;  // Optional for new terminados
+  medidaTerminadoProducto: number;
+  precioPublico: number;
+  precioPorMayor: number;
+  precioPorEncargo: number;
+  gananciaXMayor?: number;
+  gananciaXEncargo?: number;
+}
+
+export interface ProductoCreateRequest {
+  id: number;  // Required for creation
+  nombre: string;
+  cantidadDisponible?: number;
+  imagen?: string;
+  terminados: TerminadoCreateRequest[];
+}
+
+export interface ProductoUpdateRequest {
+  id: number;  // Required for update
+  nombre: string;
+  cantidadDisponible?: number;
+  imagen?: string;
+  terminados?: TerminadoCreateRequest[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private products = new BehaviorSubject<Product[]>([]);
-  products$ = this.products.asObservable();
+  private baseUrl = 'http://localhost:8080/api/productos';
+  private productos = new BehaviorSubject<ProductoBackend[]>([]);
+  
+  productos$ = this.productos.asObservable();
 
-  constructor() {
-    this.loadProductsFromStorage();
-    this.initializeDefaultProducts();
+  constructor(private http: HttpClient) {
+    this.loadProductosFromAPI();
   }
 
-  // CRUD Operations
-  getAllProducts(): Product[] {
-    return this.products.value;
+  // API Methods
+  loadProductos(keyword?: string): Observable<ProductoBackend[]> {
+    const url = keyword ? `${this.baseUrl}?keyword=${encodeURIComponent(keyword)}` : this.baseUrl;
+    return this.http.get<ProductoBackend[]>(url);
   }
 
-  getProductById(id: number): Product | undefined {
-    return this.products.value.find(product => product.id === id);
+  getProductoById(id: number): Observable<ProductoBackend> {
+    return this.http.get<ProductoBackend>(`${this.baseUrl}/${id}`);
   }
 
-  createProduct(productData: Omit<Product, 'id'>): Product {
-    const currentProducts = this.products.value;
-    const newId = currentProducts.length > 0 ? Math.max(...currentProducts.map(p => p.id)) + 1 : 1;
-    
-    const newProduct: Product = {
-      id: newId,
-      ...productData
+  createProducto(producto: ProductoCreateRequest): Observable<string> {
+    // Now the backend expects @RequestBody, so send JSON
+    const payload = {
+      id: producto.id,
+      nombre: producto.nombre,
+      cantidadDisponible: producto.cantidadDisponible || 0,
+      imagen: 'assets/images/GuiaR.png',
+      terminados: producto.terminados || []
     };
-
-    const updatedProducts = [...currentProducts, newProduct];
-    this.products.next(updatedProducts);
-    this.saveProductsToStorage();
     
-    return newProduct;
+    console.log('=== ENVIANDO AL BACKEND ===');
+    console.log('ID:', payload.id);
+    console.log('Nombre:', payload.nombre);
+    console.log('Terminados:', payload.terminados.length);
+    console.log('Payload completo:', payload);
+    
+    return this.http.post(this.baseUrl, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      responseType: 'text'  // Backend returns plain text, not JSON
+    });
   }
 
-  updateProduct(id: number, productData: Partial<Product>): Product | null {
-    const currentProducts = this.products.value;
-    const productIndex = currentProducts.findIndex(p => p.id === id);
+  updateProducto(id: number, producto: ProductoUpdateRequest): Observable<string> {
+    // Send as JSON to match backend @RequestBody
+    const payload = {
+      id: id,
+      nombre: producto.nombre,
+      cantidadDisponible: producto.cantidadDisponible || 0,
+      imagen: 'assets/images/GuiaR.png',
+      terminados: producto.terminados || []
+    };
     
-    if (productIndex === -1) {
-      return null;
-    }
-
-    const updatedProduct = { ...currentProducts[productIndex], ...productData, id };
-    currentProducts[productIndex] = updatedProduct;
+    console.log('=== ACTUALIZANDO PRODUCTO ===');
+    console.log('ID:', payload.id);
+    console.log('Payload completo:', payload);
     
-    this.products.next([...currentProducts]);
-    this.saveProductsToStorage();
-    
-    return updatedProduct;
+    return this.http.put(`${this.baseUrl}/${id}`, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      responseType: 'text'  // Backend returns plain text, not JSON
+    });
   }
 
-  deleteProduct(id: number): boolean {
-    const currentProducts = this.products.value;
-    const filteredProducts = currentProducts.filter(p => p.id !== id);
-    
-    if (filteredProducts.length === currentProducts.length) {
-      return false; // Product not found
-    }
-
-    this.products.next(filteredProducts);
-    this.saveProductsToStorage();
-    return true;
+  deleteProducto(id: number): Observable<string> {
+    return this.http.delete(`${this.baseUrl}/${id}`, {
+      responseType: 'text'  // Backend returns plain text, not JSON
+    });
   }
 
-  // Search and Filter
-  searchProducts(term: string): Product[] {
-    if (!term) return this.products.value;
+  // Local state management
+  loadProductosFromAPI(keyword?: string): void {
+    this.loadProductos(keyword).subscribe({
+      next: (productos) => {
+        console.log('Productos loaded from API:', productos);
+        this.productos.next(productos);
+      },
+      error: (error) => {
+        console.error('Error loading productos from API:', error);
+        this.loadFallbackData();
+      }
+    });
+  }
+
+  refreshProductos(): void {
+    this.loadProductosFromAPI();
+  }
+
+  // Search and filter (local)
+  searchProductos(term: string): ProductoBackend[] {
+    if (!term) return this.productos.value;
     
     const searchTerm = term.toLowerCase();
-    return this.products.value.filter(product =>
-      product.name.toLowerCase().includes(searchTerm) ||
-      product.description.toLowerCase().includes(searchTerm) ||
-      product.category.toLowerCase().includes(searchTerm)
+    return this.productos.value.filter(producto =>
+      producto.nombre.toLowerCase().includes(searchTerm) ||
+      producto.id.toString().includes(searchTerm)
     );
   }
 
-  getProductsByCategory(category: string): Product[] {
-    if (!category) return this.products.value;
-    return this.products.value.filter(product => product.category === category);
+  // Get current productos
+  getAllProductos(): ProductoBackend[] {
+    return this.productos.value;
   }
 
-  getCategories(): string[] {
-    const categories = this.products.value.map(p => p.category);
-    return [...new Set(categories)].sort();
+  getProductoByIdLocal(id: number): ProductoBackend | undefined {
+    return this.productos.value.find(producto => producto.id === id);
   }
 
-  // Inventory Management
-  updateStock(id: number, newStock: number): boolean {
-    const product = this.getProductById(id);
-    if (!product) return false;
-    
-    return this.updateProduct(id, { stock: newStock }) !== null;
-  }
-
-  isInStock(id: number): boolean {
-    const product = this.getProductById(id);
-    return product ? (product.stock || 0) > 0 : false;
-  }
-
-  // Storage Operations
-  private saveProductsToStorage() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('products', JSON.stringify(this.products.value));
-    }
-  }
-
-  private loadProductsFromStorage() {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('products');
-      if (saved) {
-        this.products.next(JSON.parse(saved));
+  // Fallback data if API fails
+  private loadFallbackData(): void {
+    const fallbackProductos: ProductoBackend[] = [
+      {
+        id: 1,
+        nombre: 'Guía de Costura Básica',
+        imagen: 'assets/images/GuiaR.png',
+        cantidadDisponible: 0, // Not used since work by order
+        terminados: [
+          {
+            id: 1,
+            medidaTerminadoProducto: 1.0,
+            precioPublico: 15000,
+            precioPorMayor: 12000,
+            precioPorEncargo: 18000
+          },
+          {
+            id: 2,
+            medidaTerminadoProducto: 1.5,
+            precioPublico: 22000,
+            precioPorMayor: 18000,
+            precioPorEncargo: 25000
+          }
+        ]
+      },
+      {
+        id: 2,
+        nombre: 'Guía de Bordado Avanzado',
+        imagen: 'assets/images/GuiaR.png',
+        cantidadDisponible: 0,
+        terminados: [
+          {
+            id: 3,
+            medidaTerminadoProducto: 2.0,
+            precioPublico: 35000,
+            precioPorMayor: 28000,
+            precioPorEncargo: 40000
+          }
+        ]
       }
+    ];
+    
+    this.productos.next(fallbackProductos);
+  }
+
+  // Helper methods
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(price);
+  }
+
+  // For compatibility with existing cart service
+  convertToCartProduct(producto: ProductoBackend, terminado?: any): any {
+    const selectedTerminado = terminado || (producto.terminados.length > 0 ? producto.terminados[0] : null);
+    
+    if (!selectedTerminado) {
+      throw new Error('Producto sin terminados disponibles');
     }
-  }
 
-  // Initialize with default products if none exist
-  private initializeDefaultProducts() {
-    if (this.products.value.length === 0) {
-      const defaultProducts: Product[] = [
-        {
-          id: 1,
-          name: 'Hilo Poliéster 40/2',
-          description: 'Hilo de poliéster de alta resistencia, ideal para todo tipo de tejidos. Disponible en múltiples colores.',
-          wholesalePrice: 6500,
-          customOrderPrice: 8000,
-          retailPrice: 8500,
-          originalPrice: 10000,
-          category: 'Hilos',
-          image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: true,
-          stock: 50
-        },
-        {
-          id: 2,
-          name: 'Agujas Schmetz Universal',
-          description: 'Set de agujas universales para máquina de coser. Tamaños 70/10, 80/12, 90/14. Pack de 10 unidades.',
-          wholesalePrice: 12000,
-          customOrderPrice: 14000,
-          retailPrice: 15000,
-          category: 'Agujas',
-          image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=220&fit=crop',
-          isNew: true,
-          onSale: false,
-          stock: 25
-        },
-        {
-          id: 3,
-          name: 'Cremallera Invisible 22cm',
-          description: 'Cremallera invisible de alta calidad, perfecta para vestidos y faldas. Disponible en colores básicos.',
-          wholesalePrice: 3200,
-          customOrderPrice: 3800,
-          retailPrice: 4200,
-          category: 'Cierres',
-          image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7f23?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: false,
-          stock: 100
-        },
-        {
-          id: 4,
-          name: 'Botones Nácar 15mm',
-          description: 'Hermosos botones de nácar natural, ideales para camisas y blusas elegantes. Pack de 12 unidades.',
-          wholesalePrice: 14000,
-          customOrderPrice: 16000,
-          retailPrice: 18000,
-          originalPrice: 22000,
-          category: 'Botones',
-          image: 'https://images.unsplash.com/photo-1604052276-8ac4aff36ce7?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: true,
-          stock: 75
-        },
-        {
-          id: 5,
-          name: 'Tijeras de Sastre Profesionales',
-          description: 'Tijeras de acero inoxidable de 25cm, con mango ergonómico. Ideal para cortes precisos en tela.',
-          wholesalePrice: 68000,
-          customOrderPrice: 78000,
-          retailPrice: 85000,
-          category: 'Herramientas',
-          image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=220&fit=crop',
-          isNew: true,
-          onSale: false,
-          stock: 15
-        },
-        {
-          id: 6,
-          name: 'Entretela Termoadhesiva',
-          description: 'Entretela blanca termoadhesiva de peso medio. Rollo de 1 metro de ancho por 25 metros de largo.',
-          wholesalePrice: 28000,
-          customOrderPrice: 32000,
-          retailPrice: 35000,
-          category: 'Entretelas',
-          image: 'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: false,
-          stock: 30
-        },
-        {
-          id: 7,
-          name: 'Cinta Métrica Profesional',
-          description: 'Cinta métrica de 150cm con marcas precisas en centímetros y pulgadas. Material flexible y resistente.',
-          wholesalePrice: 9500,
-          customOrderPrice: 11000,
-          retailPrice: 12000,
-          category: 'Herramientas',
-          image: 'https://images.unsplash.com/photo-1581594549595-35f6edc7b762?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: false,
-          stock: 40
-        },
-        {
-          id: 8,
-          name: 'Elástico 2cm Blanco',
-          description: 'Elástico plano de 2cm de ancho, suave y resistente. Ideal para cinturillas y puños. Rollo de 10 metros.',
-          wholesalePrice: 6000,
-          customOrderPrice: 7200,
-          retailPrice: 8000,
-          originalPrice: 10000,
-          category: 'Elásticos',
-          image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=300&h=220&fit=crop',
-          isNew: false,
-          onSale: true,
-          stock: 60
-        }
-      ];
-
-      this.products.next(defaultProducts);
-      this.saveProductsToStorage();
-    }
-  }
-
-  // Bulk operations
-  importProducts(products: Product[]): void {
-    this.products.next(products);
-    this.saveProductsToStorage();
-  }
-
-  exportProducts(): Product[] {
-    return this.products.value;
-  }
-
-  clearAllProducts(): void {
-    this.products.next([]);
-    this.saveProductsToStorage();
+    return {
+      id: producto.id,
+      name: producto.nombre,
+      description: `${producto.nombre} - ${selectedTerminado.medidaTerminadoProducto}m`,
+      retailPrice: selectedTerminado.precioPublico,
+      wholesalePrice: selectedTerminado.precioPorMayor,
+      customOrderPrice: selectedTerminado.precioPorEncargo,
+      stock: 999, // High stock since it's made to order
+      category: 'Guía',
+      image: 'assets/images/GuiaR.png'
+    };
   }
 }

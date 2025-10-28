@@ -1,0 +1,146 @@
+<div class="product-view-container">
+  <!-- Header -->
+  <div class="view-header">
+    <button class="btn-back" (click)="goBack()">
+      <i class="fa-solid fa-arrow-left"></i>
+      Volver a guías
+    </button>
+    <div class="header-actions">
+      <button class="btn-edit" (click)="editProduct()" *ngIf="producto">
+        <i class="fa-solid fa-edit"></i>
+        Editar
+      </button>
+      <button class="btn-delete" (click)="deleteProduct()" *ngIf="producto">
+        <i class="fa-solid fa-trash"></i>
+        Eliminar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <h3>Cargando guía...</h3>
+    <p>Por favor espera</p>
+  </div>
+
+  <!-- Product Details -->
+  <div class="product-details" *ngIf="!isLoading && producto">
+    <div class="product-header">
+      <div class="product-image">
+        <img src="assets/images/GuiaR.png" [alt]="producto.nombre" class="main-image">
+      </div>
+      <div class="product-info">
+        <h1>{{ producto.nombre }}</h1>
+        <p class="product-id">ID: {{ producto.id }}</p>
+        <div class="stats-summary">
+          <div class="stat-item">
+            <span class="stat-label">Total de medidas:</span>
+            <span class="stat-value">{{ getTerminadosCount() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Rango de precios:</span>
+            <span class="stat-value">{{ getPriceRange() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Precio promedio:</span>
+            <span class="stat-value">{{ formatPrice(getAveragePrice()) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminados Section -->
+    <div class="terminados-section">
+      <h2>
+        <i class="fa-solid fa-ruler"></i>
+        Medidas y Precios Disponibles
+      </h2>
+      
+      <div class="terminados-grid" *ngIf="producto.terminados.length > 0">
+        <div *ngFor="let terminado of producto.terminados" class="terminado-card">
+          <div class="terminado-header">
+            <div class="medida-badge">
+              <i class="fa-solid fa-ruler"></i>
+              {{ terminado.medidaTerminadoProducto }}m
+            </div>
+            <div class="terminado-id">ID: {{ terminado.id }}</div>
+          </div>
+          
+          <div class="precios-section">
+            <h4>Precios</h4>
+            <div class="precios-list">
+              <div class="precio-row precio-publico">
+                <div class="precio-info">
+                  <span class="precio-type">Precio Público</span>
+                  <span class="precio-description">Para ventas al detalle</span>
+                </div>
+                <span class="precio-amount">{{ formatPrice(terminado.precioPublico) }}</span>
+              </div>
+              
+              <div class="precio-row precio-mayor">
+                <div class="precio-info">
+                  <span class="precio-type">Precio por Mayor</span>
+                  <span class="precio-description">Para ventas mayoristas</span>
+                </div>
+                <span class="precio-amount">{{ formatPrice(terminado.precioPorMayor) }}</span>
+              </div>
+              
+              <div class="precio-row precio-encargo">
+                <div class="precio-info">
+                  <span class="precio-type">Precio por Encargo</span>
+                  <span class="precio-description">Para trabajos personalizados</span>
+                </div>
+                <span class="precio-amount">{{ formatPrice(terminado.precioPorEncargo) }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ganancias if available -->
+          <div class="ganancias-section" *ngIf="terminado.gananciaXMayor || terminado.gananciaXEncargo">
+            <h4>Márgenes de Ganancia</h4>
+            <div class="ganancias-list">
+              <div class="ganancia-row" *ngIf="terminado.gananciaXMayor">
+                <span class="ganancia-type">Ganancia por Mayor:</span>
+                <span class="ganancia-value">{{ terminado.gananciaXMayor }}%</span>
+              </div>
+              <div class="ganancia-row" *ngIf="terminado.gananciaXEncargo">
+                <span class="ganancia-type">Ganancia por Encargo:</span>
+                <span class="ganancia-value">{{ terminado.gananciaXEncargo }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="no-terminados" *ngIf="producto.terminados.length === 0">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <h3>Sin medidas configuradas</h3>
+        <p>Esta guía no tiene medidas terminadas configuradas aún.</p>
+      </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="additional-info">
+      <div class="info-card">
+        <h3>Información del Producto</h3>
+        <div class="info-row">
+          <span class="info-label">Nombre:</span>
+          <span class="info-value">{{ producto.nombre }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">ID del Producto:</span>
+          <span class="info-value">{{ producto.id }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Cantidad Disponible:</span>
+          <span class="info-value">{{ producto.cantidadDisponible || 0 }} (Trabajo por encargo)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total de Medidas:</span>
+          <span class="info-value">{{ getTerminadosCount() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,174 +1,145 @@
 <div class="products-admin-container">
   <!-- Header -->
   <div class="admin-header">
-    <h2>
-      <i class="fa-solid fa-boxes-stacked"></i>
-      Administración de Productos
-    </h2>
+    <h1>Gestión de Guías</h1>
     <div class="header-actions">
-      <button class="btn-export" (click)="exportProducts()">
-        <i class="fa-solid fa-download"></i>
-        Exportar
+      <button class="btn btn-primary" (click)="createProduct()">
+        <i class="icon">📖</i>
+        Nueva Guía
       </button>
-      <label class="btn-import">
-        <i class="fa-solid fa-upload"></i>
-        Importar
-        <input type="file" accept=".json" (change)="importProducts($event)" hidden>
-      </label>
-      <button class="btn-create" (click)="createProduct()">
-        <i class="fa-solid fa-plus"></i>
-        Nuevo Producto
+      <button class="btn btn-info" (click)="refreshProductos()" [disabled]="isLoading">
+        <i class="icon">🔄</i>
+        {{ isLoading ? 'Cargando...' : 'Refrescar' }}
       </button>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filters-container">
-    <div class="search-container">
-      <i class="fa-solid fa-search search-icon"></i>
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ productos.length }}</div>
+      <div class="stat-label">Total Guías</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ getTotalTerminados() }}</div>
+      <div class="stat-label">Total Medidas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ filteredProductos.length }}</div>
+      <div class="stat-label">Mostrando</div>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-box">
       <input 
         type="text" 
-        [(ngModel)]="searchTerm" 
-        (input)="applyFilters()" 
-        placeholder="Buscar productos..." 
-        class="search-input">
+        class="form-control" 
+        placeholder="Buscar guías..." 
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+      >
+      <i class="search-icon">🔍</i>
     </div>
-    
-    <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="filter-select">
-      <option value="">Todas las categorías</option>
-      <option *ngFor="let category of categories" [value]="category">{{category}}</option>
-    </select>
-    
-    <select [(ngModel)]="sortBy" (change)="sortProducts()" class="filter-select">
-      <option value="name">Ordenar por nombre</option>
-      <option value="category">Ordenar por categoría</option>
-      <option value="retailPrice">Ordenar por precio</option>
-      <option value="stock">Ordenar por stock</option>
-    </select>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <select class="form-select" [(ngModel)]="sortBy" (change)="sortProducts()">
+        <option value="nombre">Ordenar por Nombre</option>
+        <option value="id">Ordenar por ID</option>
+        <option value="terminados">Ordenar por Medidas</option>
+      </select>
+    </div>
   </div>
 
   <!-- Products Table -->
-  <div class="table-container">
+  <div class="table-container" *ngIf="!isLoading">
     <table class="products-table">
       <thead>
         <tr>
-          <th>Imagen</th>
-          <th>Producto</th>
-          <th>Categoría</th>
-          <th>Precios</th>
-          <th>Stock</th>
-          <th>Estado</th>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Medidas</th>
+          <th>Rango de Precios</th>
+          <th>Precio Promedio</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let product of filteredProducts" class="product-row">
-          <td class="image-cell">
-            <img [src]="product.image" [alt]="product.name" class="product-image">
+        <tr *ngFor="let producto of filteredProductos" class="product-row">
+          <td>{{ producto.id }}</td>
+          
+          <td class="name-cell">
+            <div class="product-name">{{ producto.nombre }}</div>
+            <div class="product-details">{{ getTerminadosCount(producto) }} medidas disponibles</div>
           </td>
           
-          <td class="product-info">
-            <h4>{{product.name}}</h4>
-            <p>{{product.description | slice:0:100}}{{product.description.length > 100 ? '...' : ''}}</p>
-          </td>
-          
-          <td class="category-cell">
-            <span class="category-tag">{{product.category}}</span>
-          </td>
-          
-          <td class="prices-cell">
-            <div class="price-row">
-              <span class="price-label">Mayorista:</span>
-              <span class="price-value">${{product.wholesalePrice}}</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Encargo:</span>
-              <span class="price-value">${{product.customOrderPrice}}</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Público:</span>
-              <span class="price-value main-price">${{product.retailPrice}}</span>
-            </div>
-          </td>
-          
-          <td class="stock-cell">
-            <div class="stock-info">
-              <input 
-                type="number" 
-                [value]="product.stock || 0"
-                (change)="updateStock(product, +$any($event.target).value)"
-                class="stock-input"
-                min="0">
-              <span class="stock-status" [ngClass]="getStockClass(product.stock)">
-                {{getStockStatus(product.stock)}}
+          <td class="measures-cell">
+            <div class="measures-list">
+              <span *ngFor="let terminado of producto.terminados; let last = last" class="measure-badge">
+                {{ terminado.medidaTerminadoProducto }}m<span *ngIf="!last">, </span>
               </span>
+              <span *ngIf="producto.terminados.length === 0" class="no-measures">Sin medidas</span>
             </div>
           </td>
           
-          <td class="status-cell">
-            <div class="status-badges">
-              <button 
-                class="badge-btn" 
-                [class.active]="product.isNew"
-                (click)="toggleProductStatus(product, 'isNew')"
-                title="Producto nuevo">
-                <i class="fa-solid fa-star"></i>
-                Nuevo
-              </button>
-              <button 
-                class="badge-btn sale" 
-                [class.active]="product.onSale"
-                (click)="toggleProductStatus(product, 'onSale')"
-                title="En oferta">
-                <i class="fa-solid fa-fire"></i>
-                Oferta
-              </button>
-            </div>
+          <td class="price-range-cell">
+            <span class="price-range">{{ getPriceRange(producto) }}</span>
+          </td>
+          
+          <td class="avg-price-cell">
+            <span class="avg-price">{{ formatPrice(getAveragePrice(producto)) }}</span>
           </td>
           
           <td class="actions-cell">
             <div class="action-buttons">
-              <button class="btn-view" (click)="viewProduct(product.id)" title="Ver detalles">
-                <i class="fa-solid fa-eye"></i>
+              <button 
+                class="btn-action btn-view" 
+                (click)="viewProduct(producto.id)"
+                title="Ver detalles"
+              >
+                👁️
               </button>
-              <button class="btn-edit" (click)="editProduct(product.id)" title="Editar">
-                <i class="fa-solid fa-edit"></i>
+              <button 
+                class="btn-action btn-edit" 
+                (click)="editProduct(producto.id)"
+                title="Editar guía"
+              >
+                ✏️
               </button>
-              <button class="btn-delete" (click)="deleteProduct(product)" title="Eliminar">
-                <i class="fa-solid fa-trash"></i>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="deleteProduct(producto)"
+                title="Eliminar guía"
+              >
+                🗑️
               </button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredProductos.length === 0" class="empty-state">
+      <div class="empty-icon">📖</div>
+      <h3>No se encontraron guías</h3>
+      <p>No hay guías que coincidan con los filtros seleccionados.</p>
+    </div>
   </div>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="filteredProducts.length === 0">
-    <i class="fa-solid fa-box-open"></i>
-    <h3>No se encontraron productos</h3>
-    <p *ngIf="searchTerm || selectedCategory">Intenta cambiar los filtros de búsqueda</p>
-    <p *ngIf="!searchTerm && !selectedCategory">No hay productos creados aún</p>
-    <button class="btn-create-first" (click)="createProduct()">
-      <i class="fa-solid fa-plus"></i>
-      Crear primer producto
-    </button>
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="empty-state">
+    <div class="empty-icon">⏳</div>
+    <h3>Cargando guías...</h3>
+    <p>Por favor espera mientras cargamos las guías</p>
   </div>
 
-  <!-- Summary -->
-  <div class="summary-bar" *ngIf="products.length > 0">
-    <div class="summary-item">
-      <span class="summary-label">Total productos:</span>
-      <span class="summary-value">{{products.length}}</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">Categorías:</span>
-      <span class="summary-value">{{categories.length}}</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">Mostrando:</span>
-      <span class="summary-value">{{filteredProducts.length}}</span>
-    </div>
+  <!-- Results Count -->
+  <div class="results-info" *ngIf="!isLoading">
+    Mostrando {{ filteredProductos.length }} de {{ productos.length }} guías
   </div>
 </div>

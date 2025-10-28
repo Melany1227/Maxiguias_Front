@@ -67,5 +67,21 @@ export const routes: Routes = [
   {
     path: 'products/edit/:id',
     loadChildren: () => import('./components/product-form/product-form.routes').then(m => m.productFormRoutes)
+  },
+  {
+    path: 'productos-admin',
+    loadChildren: () => import('./components/products-admin/products-admin.routes').then(m => m.productsAdminRoutes)
+  },
+  {
+    path: 'productos-admin/crear',
+    loadChildren: () => import('./components/product-form/product-form.routes').then(m => m.productFormRoutes)
+  },
+  {
+    path: 'productos-admin/editar/:id',
+    loadChildren: () => import('./components/product-form/product-form.routes').then(m => m.productFormRoutes)
+  },
+  {
+    path: 'productos-admin/ver/:id',
+    loadChildren: () => import('./components/product-view/product-view.routes').then(m => m.productViewRoutes)
   }
 ];

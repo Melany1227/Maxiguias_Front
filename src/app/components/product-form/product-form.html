@@ -3,227 +3,251 @@
   <div class="form-header">
     <button class="btn-back" (click)="onCancel()">
       <i class="fa-solid fa-arrow-left"></i>
-      Volver a productos
+      Volver a guías
     </button>
     <h2>
-      <i class="fa-solid fa-box"></i>
-      {{isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto'}}
+      <i class="fa-solid fa-book"></i>
+      {{ getTitle() }}
     </h2>
   </div>
 
+  <!-- Loading indicator -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <h3>Cargando guía...</h3>
+    <p>Por favor espera</p>
+  </div>
+
   <!-- Form -->
-  <form (ngSubmit)="onSubmit()" #productForm="ngForm" class="product-form">
+  <form (ngSubmit)="onSubmit()" #productForm="ngForm" class="product-form" *ngIf="!isLoading">
     <div class="form-grid">
       
       <!-- Basic Information -->
       <div class="form-section">
-        <h3>Información Básica</h3>
+        <h3>Información de la Guía</h3>
         
-        <div class="form-group">
-          <label for="productName">Nombre del Producto *</label>
-          <input 
-            type="text" 
-            id="productName"
-            name="productName"
-            [(ngModel)]="product.name"
-            required
-            class="form-control"
-            [class.error]="errors['name']"
-            placeholder="Ej: Hilo Poliéster 40/2">
-          <span class="error-message" *ngIf="errors['name']">{{errors['name']}}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="productDescription">Descripción *</label>
-          <textarea 
-            id="productDescription"
-            name="productDescription"
-            [(ngModel)]="product.description"
-            required
-            class="form-control"
-            [class.error]="errors['description']"
-            rows="4"
-            placeholder="Descripción detallada del producto..."></textarea>
-          <span class="error-message" *ngIf="errors['description']">{{errors['description']}}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="productCategory">Categoría *</label>
-          <div class="category-input-group">
-            <select 
-              id="productCategory"
-              name="productCategory"
-              [(ngModel)]="product.category"
-              required
-              class="form-control"
-              [class.error]="errors['category']">
-              <option value="">Selecciona una categoría</option>
-              <option *ngFor="let category of categories" [value]="category">{{category}}</option>
-            </select>
-            <button type="button" class="btn-add-category" (click)="addNewCategory()">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-          <span class="error-message" *ngIf="errors['category']">{{errors['category']}}</span>
-        </div>
-      </div>
-
-      <!-- Image -->
-      <div class="form-section">
-        <h3>Imagen del Producto</h3>
-        
-        <div class="form-group">
-          <label for="productImage">URL de la Imagen *</label>
-          <div class="image-input-group">
-            <input 
-              type="url" 
-              id="productImage"
-              name="productImage"
-              [(ngModel)]="product.image"
-              required
-              class="form-control"
-              [class.error]="errors['image']"
-              placeholder="https://example.com/imagen.jpg">
-            <button type="button" class="btn-preview" (click)="previewImage()" [disabled]="!product.image">
-              <i class="fa-solid fa-eye"></i>
-            </button>
-            <button type="button" class="btn-generate" (click)="generateSampleImage()">
-              <i class="fa-solid fa-dice"></i>
-            </button>
-          </div>
-          <span class="error-message" *ngIf="errors['image']">{{errors['image']}}</span>
-        </div>
-
-        <div class="image-preview" *ngIf="product.image">
-          <img [src]="product.image" [alt]="product.name" (error)="errors['image'] = 'URL de imagen inválida'">
-        </div>
-      </div>
-
-      <!-- Pricing -->
-      <div class="form-section">
-        <h3>Precios</h3>
-        
-        <div class="pricing-helper">
-          <button type="button" class="btn-calculate" (click)="calculateSuggestedPrices()">
-            <i class="fa-solid fa-calculator"></i>
-            Calcular precios sugeridos
-          </button>
-        </div>
-
-        <div class="form-group">
-          <label for="retailPrice">Precio al Público *</label>
-          <div class="price-input">
-            <span class="currency">$</span>
-            <input 
-              type="number" 
-              id="retailPrice"
-              name="retailPrice"
-              [(ngModel)]="product.retailPrice"
-              required
-              min="1"
-              class="form-control"
-              [class.error]="errors['retailPrice']"
-              placeholder="0">
-          </div>
-          <span class="error-message" *ngIf="errors['retailPrice']">{{errors['retailPrice']}}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="customOrderPrice">Precio por Encargo *</label>
-          <div class="price-input">
-            <span class="currency">$</span>
-            <input 
-              type="number" 
-              id="customOrderPrice"
-              name="customOrderPrice"
-              [(ngModel)]="product.customOrderPrice"
-              required
-              min="1"
-              class="form-control"
-              [class.error]="errors['customOrderPrice']"
-              placeholder="0">
-          </div>
-          <span class="error-message" *ngIf="errors['customOrderPrice']">{{errors['customOrderPrice']}}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="wholesalePrice">Precio Mayorista *</label>
-          <div class="price-input">
-            <span class="currency">$</span>
-            <input 
-              type="number" 
-              id="wholesalePrice"
-              name="wholesalePrice"
-              [(ngModel)]="product.wholesalePrice"
-              required
-              min="1"
-              class="form-control"
-              [class.error]="errors['wholesalePrice']"
-              placeholder="0">
-          </div>
-          <span class="error-message" *ngIf="errors['wholesalePrice']">{{errors['wholesalePrice']}}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="originalPrice">Precio Original (para ofertas)</label>
-          <div class="price-input">
-            <span class="currency">$</span>
-            <input 
-              type="number" 
-              id="originalPrice"
-              name="originalPrice"
-              [(ngModel)]="product.originalPrice"
-              min="1"
-              class="form-control"
-              [class.error]="errors['originalPrice']"
-              placeholder="0 (opcional)">
-          </div>
-          <span class="error-message" *ngIf="errors['originalPrice']">{{errors['originalPrice']}}</span>
-        </div>
-      </div>
-
-      <!-- Inventory & Status -->
-      <div class="form-section">
-        <h3>Inventario y Estado</h3>
-        
-        <div class="form-group">
-          <label for="productStock">Stock Inicial</label>
+        <div class="form-group" *ngIf="!isEditMode">
+          <label for="productoId">ID del Producto *</label>
           <input 
             type="number" 
-            id="productStock"
-            name="productStock"
-            [(ngModel)]="product.stock"
+            id="productoId"
+            name="productoId"
+            [(ngModel)]="producto.id"
+            required
+            min="1"
+            class="form-control"
+            [class.error]="errors['id']"
+            placeholder="Ej: 1">
+          <small class="form-text">ID único del producto en el sistema</small>
+          <span class="error-message" *ngIf="errors['id']">{{errors['id']}}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="productoNombre">Nombre de la Guía *</label>
+          <input 
+            type="text" 
+            id="productoNombre"
+            name="productoNombre"
+            [(ngModel)]="producto.nombre"
+            required
+            minlength="3"
+            class="form-control"
+            [class.error]="errors['nombre']"
+            placeholder="Ej: Guía de Costura Básica">
+          <span class="error-message" *ngIf="errors['nombre']">{{errors['nombre']}}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="cantidadDisponible">Cantidad Disponible</label>
+          <input 
+            type="number" 
+            id="cantidadDisponible"
+            name="cantidadDisponible"
+            [(ngModel)]="producto.cantidadDisponible"
             min="0"
             class="form-control"
-            [class.error]="errors['stock']"
+            [class.error]="errors['cantidadDisponible']"
             placeholder="0">
-          <span class="error-message" *ngIf="errors['stock']">{{errors['stock']}}</span>
+          <small class="form-text">Nota: Como trabajamos por encargo, este campo es opcional</small>
+          <span class="error-message" *ngIf="errors['cantidadDisponible']">{{errors['cantidadDisponible']}}</span>
         </div>
 
         <div class="form-group">
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="product.isNew"
-                name="isNew">
-              <span class="checkmark"></span>
-              Producto Nuevo
-            </label>
+          <label>Imagen</label>
+          <div class="image-preview">
+            <img src="assets/images/GuiaR.png" alt="Imagen de guía" class="preview-image">
+            <p class="image-note">Se usará la imagen estándar para todas las guías</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terminados Section -->
+      <div class="form-section">
+        <h3>
+          <i class="fa-solid fa-ruler"></i>
+          Medidas y Precios
+        </h3>
+        <p class="section-description">Configure las diferentes medidas terminadas disponibles para esta guía</p>
+        
+        <span class="error-message" *ngIf="errors['terminados']">{{errors['terminados']}}</span>
+        
+        <div class="terminados-container">
+          <div *ngFor="let terminado of terminados; let i = index" class="terminado-form">
+            <div class="terminado-header">
+              <h4>Medida {{ i + 1 }}</h4>
+              <button 
+                type="button" 
+                class="btn-remove-terminado" 
+                (click)="removeTerminado(i)"
+                [disabled]="terminados.length === 1"
+                title="Eliminar esta medida">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+
+            <div class="terminado-grid">
+              <!-- Medida -->
+              <div class="form-group">
+                <label [for]="'medida_' + i">Medida (metros) *</label>
+                <input 
+                  type="number" 
+                  [id]="'medida_' + i"
+                  [name]="'medida_' + i"
+                  [(ngModel)]="terminado.medidaTerminadoProducto"
+                  (ngModelChange)="onTerminadoChange(i, 'medidaTerminadoProducto', $event)"
+                  min="0.1"
+                  step="0.1"
+                  class="form-control"
+                  [class.error]="errors['terminado_' + i + '_medida']"
+                  placeholder="Ej: 1.5">
+                <span class="error-message" *ngIf="errors['terminado_' + i + '_medida']">
+                  {{errors['terminado_' + i + '_medida']}}
+                </span>
+              </div>
+
+              <!-- Precio Público -->
+              <div class="form-group">
+                <label [for]="'precioPublico_' + i">Precio Público *</label>
+                <div class="price-input">
+                  <span class="currency">$</span>
+                  <input 
+                    type="number" 
+                    [id]="'precioPublico_' + i"
+                    [name]="'precioPublico_' + i"
+                    [(ngModel)]="terminado.precioPublico"
+                    (ngModelChange)="onTerminadoChange(i, 'precioPublico', $event)"
+                    min="1"
+                    class="form-control"
+                    [class.error]="errors['terminado_' + i + '_precioPublico']"
+                    placeholder="0">
+                </div>
+                <span class="error-message" *ngIf="errors['terminado_' + i + '_precioPublico']">
+                  {{errors['terminado_' + i + '_precioPublico']}}
+                </span>
+              </div>
+
+              <!-- Precio Por Mayor -->
+              <div class="form-group">
+                <label [for]="'precioPorMayor_' + i">Precio por Mayor *</label>
+                <div class="price-input">
+                  <span class="currency">$</span>
+                  <input 
+                    type="number" 
+                    [id]="'precioPorMayor_' + i"
+                    [name]="'precioPorMayor_' + i"
+                    [(ngModel)]="terminado.precioPorMayor"
+                    (ngModelChange)="onTerminadoChange(i, 'precioPorMayor', $event)"
+                    min="1"
+                    class="form-control"
+                    [class.error]="errors['terminado_' + i + '_precioPorMayor']"
+                    placeholder="0">
+                </div>
+                <span class="error-message" *ngIf="errors['terminado_' + i + '_precioPorMayor']">
+                  {{errors['terminado_' + i + '_precioPorMayor']}}
+                </span>
+              </div>
+
+              <!-- Precio Por Encargo -->
+              <div class="form-group">
+                <label [for]="'precioPorEncargo_' + i">Precio por Encargo *</label>
+                <div class="price-input">
+                  <span class="currency">$</span>
+                  <input 
+                    type="number" 
+                    [id]="'precioPorEncargo_' + i"
+                    [name]="'precioPorEncargo_' + i"
+                    [(ngModel)]="terminado.precioPorEncargo"
+                    (ngModelChange)="onTerminadoChange(i, 'precioPorEncargo', $event)"
+                    min="1"
+                    class="form-control"
+                    [class.error]="errors['terminado_' + i + '_precioPorEncargo']"
+                    placeholder="0">
+                </div>
+                <span class="error-message" *ngIf="errors['terminado_' + i + '_precioPorEncargo']">
+                  {{errors['terminado_' + i + '_precioPorEncargo']}}
+                </span>
+              </div>
+
+              <!-- Ganancia Por Mayor (Opcional) -->
+              <div class="form-group">
+                <label [for]="'gananciaXMayor_' + i">Ganancia por Mayor (%)</label>
+                <input 
+                  type="number" 
+                  [id]="'gananciaXMayor_' + i"
+                  [name]="'gananciaXMayor_' + i"
+                  [(ngModel)]="terminado.gananciaXMayor"
+                  (ngModelChange)="onTerminadoChange(i, 'gananciaXMayor', $event)"
+                  min="0"
+                  max="100"
+                  class="form-control"
+                  placeholder="0">
+                <small class="form-text">Opcional: Porcentaje de ganancia esperado</small>
+              </div>
+
+              <!-- Ganancia Por Encargo (Opcional) -->
+              <div class="form-group">
+                <label [for]="'gananciaXEncargo_' + i">Ganancia por Encargo (%)</label>
+                <input 
+                  type="number" 
+                  [id]="'gananciaXEncargo_' + i"
+                  [name]="'gananciaXEncargo_' + i"
+                  [(ngModel)]="terminado.gananciaXEncargo"
+                  (ngModelChange)="onTerminadoChange(i, 'gananciaXEncargo', $event)"
+                  min="0"
+                  max="100"
+                  class="form-control"
+                  placeholder="0">
+                <small class="form-text">Opcional: Porcentaje de ganancia esperado</small>
+              </div>
+            </div>
+
+            <!-- Price Preview -->
+            <div class="price-preview" *ngIf="terminado.precioPublico > 0 || terminado.precioPorMayor > 0 || terminado.precioPorEncargo > 0">
+              <h5>Vista previa de precios:</h5>
+              <div class="price-preview-grid">
+                <div class="price-preview-item" *ngIf="terminado.precioPublico > 0">
+                  <span class="price-label">Público:</span>
+                  <span class="price-value">{{ formatPrice(terminado.precioPublico) }}</span>
+                </div>
+                <div class="price-preview-item" *ngIf="terminado.precioPorMayor > 0">
+                  <span class="price-label">Por Mayor:</span>
+                  <span class="price-value">{{ formatPrice(terminado.precioPorMayor) }}</span>
+                </div>
+                <div class="price-preview-item" *ngIf="terminado.precioPorEncargo > 0">
+                  <span class="price-label">Por Encargo:</span>
+                  <span class="price-value">{{ formatPrice(terminado.precioPorEncargo) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="product.onSale"
-                name="onSale">
-              <span class="checkmark"></span>
-              En Oferta
-            </label>
-          </div>
+        <!-- Add Terminado Button -->
+        <div class="add-terminado-container">
+          <button type="button" class="btn-add-terminado" (click)="addTerminado()">
+            <i class="fa-solid fa-plus"></i>
+            Agregar otra medida
+          </button>
         </div>
       </div>
     </div>
@@ -237,10 +261,10 @@
       <button 
         type="submit" 
         class="btn-save"
-        [disabled]="!productForm.form.valid || isSubmitting">
-        <i class="fa-solid fa-save" *ngIf="!isSubmitting"></i>
-        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting"></i>
-        {{isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar Producto' : 'Crear Producto')}}
+        [disabled]="!productForm.form.valid || isSaving">
+        <i class="fa-solid fa-save" *ngIf="!isSaving"></i>
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+        {{ getSubmitText() }}
       </button>
     </div>
   </form>
