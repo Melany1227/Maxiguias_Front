@@ -10,86 +10,130 @@
       <input 
         type="text" 
         [(ngModel)]="searchTerm" 
-        (input)="filterProducts()" 
+        (ngModelChange)="onSearchChange()" 
         placeholder="Buscar productos..." 
         class="search-input">
     </div>
   </div>
 
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ catalogStats.totalProductos }}</div>
+      <div class="stat-label">Total Guías</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ formatPrice(catalogStats.precioPromedio) }}</div>
+      <div class="stat-label">Precio Promedio</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ catalogStats.totalTerminados }}</div>
+      <div class="stat-label">Medidas Totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ catalogStats.disponibilidadPorEncargo }}</div>
+      <div class="stat-label">Disponible por Encargo</div>
+    </div>
+  </div>
+
   <!-- Filtros adicionales -->
   <div class="filters-container">
-    <select [(ngModel)]="selectedCategory" (change)="filterProducts()" class="filter-select">
-      <option value="">Todas las categorías</option>
-      <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+    <select [(ngModel)]="sortBy" (change)="sortProducts()" class="filter-select">
+      <option value="nombre">Ordenar por nombre</option>
+      <option value="precio">Ordenar por precio</option>
+      <option value="medidas">Ordenar por cantidad de medidas</option>
     </select>
     
-    <select [(ngModel)]="sortBy" (change)="sortProducts()" class="filter-select">
-      <option value="name">Ordenar por nombre</option>
-      <option value="price">Ordenar por precio</option>
-      <option value="category">Ordenar por categoría</option>
-    </select>
+    <button class="btn btn-secondary" (click)="refreshCatalog()" [disabled]="isLoading">
+      <i class="fa-solid fa-refresh"></i>
+      {{ isLoading ? 'Cargando...' : 'Refrescar' }}
+    </button>
   </div>
 
   <!-- Grid de productos -->
   <div class="products-grid">
-    <div *ngFor="let product of filteredProducts" class="product-card">
+    <div *ngFor="let producto of productos" class="product-card">
       <div class="product-image">
-        <img [src]="product.image" [alt]="product.name" loading="lazy">
-        <div class="product-badge" *ngIf="product.isNew">Nuevo</div>
-        <div class="product-badge sale" *ngIf="product.onSale">Oferta</div>
+        <img src="assets/images/GuiaR.png" [alt]="producto.nombre" loading="lazy">
+        <div class="product-badge trabajo-encargo">Trabajo por Encargo</div>
       </div>
       
       <div class="product-info">
-        <h3 class="product-name">{{product.name}}</h3>
-        <p class="product-description">{{product.description}}</p>
-        <div class="product-category">
-          <i class="fa-solid fa-tag"></i>
-          {{product.category}}
+        <h3 class="product-name">{{ producto.nombre }}</h3>
+        <div class="product-id">
+          <i class="fa-solid fa-barcode"></i>
+          ID: {{ producto.id }}
         </div>
         
-        <div class="product-prices">
-          <div class="price-row">
-            <span class="price-label">Mayorista:</span>
-            <span class="wholesale-price">${{product.wholesalePrice}}</span>
-          </div>
-          <div class="price-row">
-            <span class="price-label">Por encargo:</span>
-            <span class="custom-price">${{product.customOrderPrice}}</span>
-          </div>
-          <div class="price-row">
-            <span class="price-label">Al público:</span>
-            <span class="retail-price">${{product.retailPrice}}</span>
-            <span class="original-price" *ngIf="product.originalPrice">${{product.originalPrice}}</span>
+        <div class="product-type">
+          <i class="fa-solid fa-tools"></i>
+          Trabajo por Encargo
+        </div>
+        
+        <!-- Terminados information -->
+        <div class="terminados-section" *ngIf="producto.terminados.length > 0">
+          <div class="terminado-item" *ngFor="let terminado of producto.terminados">
+            <div class="terminado-header">
+              <span class="terminado-medida">{{ terminado.medidaTerminadoProducto }}m</span>
+            </div>
+            
+            <div class="precios-grid">
+              <div class="precio-item">
+                <span class="precio-label">Público:</span>
+                <span class="precio-publico">{{ formatPrice(terminado.precioPublico) }}</span>
+              </div>
+              <div class="precio-item">
+                <span class="precio-label">Por Mayor:</span>
+                <span class="precio-mayor">{{ formatPrice(terminado.precioPorMayor) }}</span>
+              </div>
+              <div class="precio-item">
+                <span class="precio-label">Por Encargo:</span>
+                <span class="precio-encargo">{{ formatPrice(terminado.precioPorEncargo) }}</span>
+              </div>
+            </div>
+            
+            <div class="terminado-actions">
+              <button 
+                class="btn-add-cart-terminado" 
+                (click)="addToCart(producto, terminado)">
+                <i class="fa-solid fa-cart-plus"></i>
+                Agregar al Carrito
+              </button>
+            </div>
           </div>
         </div>
         
-        <div class="price-selector">
-          <label for="priceType-{{product.id}}" class="price-type-label">Tipo de precio:</label>
-          <select id="priceType-{{product.id}}" class="price-type-select" #priceTypeSelect>
-            <option value="retail">Al público</option>
-            <option value="custom">Por encargo</option>
-            <option value="wholesale">Mayorista</option>
-          </select>
+        <!-- No terminados message -->
+        <div class="no-terminados" *ngIf="producto.terminados.length === 0">
+          <p>Sin medidas disponibles</p>
         </div>
         
         <div class="product-actions">
-          <button class="btn-add-cart" (click)="addToCart(product, getPriceType(priceTypeSelect.value))">
-            <i class="fa-solid fa-cart-plus"></i>
-            Agregar al carrito
-          </button>
-          <button class="btn-view-details" (click)="viewDetails(product)">
+          <button class="btn-view-details" (click)="viewDetails(producto)">
             <i class="fa-solid fa-eye"></i>
-            Ver más
+            Ver más detalles
           </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Loading indicator -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <h3>Cargando productos...</h3>
+    <p>Por favor espera mientras cargamos el catálogo</p>
+  </div>
+
   <!-- Mensaje cuando no hay productos -->
-  <div class="no-products" *ngIf="filteredProducts.length === 0">
+  <div class="no-products" *ngIf="productos.length === 0 && !isLoading">
     <i class="fa-solid fa-box-open"></i>
     <h3>No se encontraron productos</h3>
-    <p>Intenta con otros términos de búsqueda o filtros</p>
+    <p>Intenta con otros términos de búsqueda o refresca el catálogo</p>
+  </div>
+
+  <!-- Results info -->
+  <div class="results-info" *ngIf="productos.length > 0">
+    Mostrando {{ productos.length }} productos
   </div>
 </div>

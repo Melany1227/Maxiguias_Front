@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService, Product } from '../../services/cart.service';
-import { ProductService } from '../../services/product.service';
+import { CatalogService, ProductoCatalogoDTO, CatalogStats } from '../../services/catalog.service';
 import { Subscription } from 'rxjs';
 
 
@@ -14,26 +14,37 @@ import { Subscription } from 'rxjs';
 })
 export class Catalog implements OnInit, OnDestroy {
   searchTerm: string = '';
-  selectedCategory: string = '';
-  sortBy: string = 'name';
+  sortBy: string = 'nombre';
   
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  categories: string[] = [];
+  productos: ProductoCatalogoDTO[] = [];
+  catalogStats: CatalogStats = {
+    totalProductos: 0,
+    precioPromedio: 0,
+    totalTerminados: 0,
+    disponibilidadPorEncargo: '100%'
+  };
+  isLoading: boolean = false;
   
   private subscription: Subscription = new Subscription();
 
   constructor(
     private cartService: CartService,
-    private productService: ProductService
+    public catalogService: CatalogService
   ) {}
 
   ngOnInit() {
+    // Subscribe to products from catalog service
     this.subscription.add(
-      this.productService.products$.subscribe(products => {
-        this.products = products;
-        this.loadCategories();
-        this.filterProducts();
+      this.catalogService.productos$.subscribe(productos => {
+        this.productos = productos;
+        this.sortProducts();
+      })
+    );
+
+    // Subscribe to catalog stats
+    this.subscription.add(
+      this.catalogService.stats$.subscribe(stats => {
+        this.catalogStats = stats;
       })
     );
   }
@@ -42,65 +53,80 @@ export class Catalog implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  loadCategories() {
-    this.categories = this.productService.getCategories();
+  onSearchChange() {
+    if (this.searchTerm.trim()) {
+      this.isLoading = true;
+      this.catalogService.searchAndUpdate(this.searchTerm.trim());
+      // Loading will be set to false when subscription receives new data
+      setTimeout(() => this.isLoading = false, 1000);
+    } else {
+      this.refreshCatalog();
+    }
   }
 
-  filterProducts() {
-    let filtered = this.products;
-
-    // Filtrar por término de búsqueda
-    if (this.searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-
-    // Filtrar por categoría
-    if (this.selectedCategory) {
-      filtered = filtered.filter(product => product.category === this.selectedCategory);
-    }
-
-    this.filteredProducts = filtered;
-    this.sortProducts();
+  refreshCatalog() {
+    this.isLoading = true;
+    this.catalogService.refreshCatalog();
+    setTimeout(() => this.isLoading = false, 1000);
   }
 
   sortProducts() {
-    this.filteredProducts.sort((a, b) => {
+    this.productos.sort((a, b) => {
       switch (this.sortBy) {
-        case 'price':
-          return a.retailPrice - b.retailPrice;
-        case 'category':
-          return a.category.localeCompare(b.category);
-        case 'name':
+        case 'precio':
+          const priceA = a.terminados.length > 0 ? a.terminados[0].precioPublico : 0;
+          const priceB = b.terminados.length > 0 ? b.terminados[0].precioPublico : 0;
+          return priceA - priceB;
+        case 'medidas':
+          return b.terminados.length - a.terminados.length;
+        case 'nombre':
         default:
-          return a.name.localeCompare(b.name);
+          return a.nombre.localeCompare(b.nombre);
       }
     });
   }
 
-  addToCart(product: Product, priceType: 'wholesale' | 'custom' | 'retail' = 'retail') {
-    console.log('Botón presionado - Producto:', product.name, 'Precio:', priceType);
+  addToCart(producto: ProductoCatalogoDTO, terminado?: any) {
+    // Use first terminado if none specified
+    const selectedTerminado = terminado || (producto.terminados.length > 0 ? producto.terminados[0] : null);
+    
+    if (!selectedTerminado) {
+      alert('❌ Producto sin información de precios');
+      return;
+    }
+    
+    console.log('Botón presionado - Producto:', producto.nombre, 'Terminado:', selectedTerminado);
+    
     try {
-      this.cartService.addToCart(product, 1, priceType);
-      console.log(`✅ Producto ${product.name} agregado al carrito con precio ${priceType}`);
-      alert(`✅ ${product.name} agregado al carrito`);
+      // Convert ProductoCatalogoDTO to Product for cart service
+      const cartProduct: Product = {
+        id: producto.id,
+        name: producto.nombre,
+        description: `${producto.nombre} - ${selectedTerminado.medidaTerminadoProducto}m`,
+        retailPrice: selectedTerminado.precioPublico,
+        wholesalePrice: selectedTerminado.precioPorMayor,
+        customOrderPrice: selectedTerminado.precioPorEncargo,
+        stock: 999, // High stock since it's made to order
+        category: 'Guía', // Default category for guides
+        image: 'assets/images/GuiaR.png'
+      };
+      
+      this.cartService.addToCart(cartProduct, 1, 'retail');
+      console.log(`✅ Producto ${producto.nombre} agregado al carrito`);
+      alert(`✅ ${producto.nombre} agregado al carrito`);
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
       alert('Error al agregar al carrito');
     }
   }
 
-  viewDetails(product: Product) {
-    console.log('Ver detalles de:', product);
+  viewDetails(producto: ProductoCatalogoDTO) {
+    console.log('Ver detalles de:', producto);
     // Aquí implementarías la navegación a la página de detalles
   }
 
-  getPriceType(value: string): 'wholesale' | 'custom' | 'retail' {
-    if (value === 'wholesale' || value === 'custom' || value === 'retail') {
-      return value;
-    }
-    return 'retail';
+  formatPrice(price: number): string {
+    return this.catalogService.formatPrice(price);
   }
+
 }

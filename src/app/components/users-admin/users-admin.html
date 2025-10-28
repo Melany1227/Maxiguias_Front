@@ -102,7 +102,7 @@
               {{ user.tipoUsuario?.nombre || 'Sin tipo' }}
             </span>
           </td>
-          <td>{{ user.perfil?.nombrePerfil || 'Sin perfil' }}</td>
+          <td>{{ user.perfil ? user.perfil.nombrePerfil : 'Sin perfil' }}</td>
           <td>{{ user.fechaRegistro ? formatDate(user.fechaRegistro) : 'N/A' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
