@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CartService, Order } from '../../services/cart.service';
+import { OrdersService, Orden } from '../../services/orders.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -12,8 +12,8 @@ import { Subscription } from 'rxjs';
   styleUrl: './orders-list.css'
 })
 export class OrdersList implements OnInit, OnDestroy {
-  orders: Order[] = [];
-  filteredOrders: Order[] = [];
+  orders: Orden[] = [];
+  filteredOrders: Orden[] = [];
   
   searchTerm: string = '';
   selectedStatus: string = '';
@@ -21,27 +21,28 @@ export class OrdersList implements OnInit, OnDestroy {
   
   statusOptions = [
     { value: '', label: 'Todos los estados' },
-    { value: 'pending', label: 'Pendiente' },
-    { value: 'confirmed', label: 'Confirmado' },
-    { value: 'in_progress', label: 'En progreso' },
-    { value: 'completed', label: 'Completado' },
-    { value: 'cancelled', label: 'Cancelado' }
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'EN_PROCESO', label: 'En Proceso' },
+    { value: 'FINALIZADA', label: 'Finalizada' },
+    { value: 'CANCELADA', label: 'Cancelada' },
+    { value: 'FACTURADA', label: 'Facturada' }
   ];
 
   private subscription: Subscription = new Subscription();
 
   constructor(
-    private cartService: CartService,
+    private ordersService: OrdersService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.subscription.add(
-      this.cartService.orders$.subscribe(orders => {
+      this.ordersService.orders$.subscribe(orders => {
         this.orders = orders;
         this.applyFilters();
       })
     );
+    this.ordersService.loadOrdenesAndUpdate();
   }
 
   ngOnDestroy() {
@@ -54,15 +55,16 @@ export class OrdersList implements OnInit, OnDestroy {
     // Filtrar por término de búsqueda
     if (this.searchTerm) {
       filtered = filtered.filter(order =>
-        order.customerName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.customerEmail.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        order.usuario.nombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        order.usuario.primerApellido.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        order.usuario.nombreUsuario.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         order.id.toString().includes(this.searchTerm)
       );
     }
 
     // Filtrar por estado
     if (this.selectedStatus) {
-      filtered = filtered.filter(order => order.status === this.selectedStatus);
+      filtered = filtered.filter(order => order.estado === this.selectedStatus);
     }
 
     this.filteredOrders = filtered;
@@ -73,21 +75,22 @@ export class OrdersList implements OnInit, OnDestroy {
     this.filteredOrders.sort((a, b) => {
       switch (this.sortBy) {
         case 'date':
-          return new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime();
+          return new Date(b.fechaPedido).getTime() - new Date(a.fechaPedido).getTime();
         case 'customer':
-          return a.customerName.localeCompare(b.customerName);
+          return a.usuario.nombre.localeCompare(b.usuario.nombre);
         case 'total':
-          return b.totalAmount - a.totalAmount;
+          return b.total - a.total;
         case 'status':
-          return a.status.localeCompare(b.status);
+          return a.estado.localeCompare(b.estado);
         default:
           return 0;
       }
     });
   }
 
-  updateStatus(orderId: number, newStatus: Order['status']) {
-    this.cartService.updateOrderStatus(orderId, newStatus);
+  updateStatus(orderId: number, newStatus: string) {
+    // TODO: Implement order status update API call
+    console.log('Update status:', orderId, newStatus);
   }
 
   viewOrder(orderId: number) {
@@ -103,23 +106,23 @@ export class OrdersList implements OnInit, OnDestroy {
     return statusOption ? statusOption.label : status;
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'pending': return 'status-pending';
-      case 'confirmed': return 'status-confirmed';
-      case 'in_progress': return 'status-progress';
-      case 'completed': return 'status-completed';
-      case 'cancelled': return 'status-cancelled';
+  getStatusClass(estado: string): string {
+    switch (estado) {
+      case 'PENDIENTE': return 'status-pending';
+      case 'EN_PROCESO': return 'status-progress';
+      case 'FINALIZADA': return 'status-completed';
+      case 'CANCELADA': return 'status-cancelled';
+      case 'FACTURADA': return 'status-confirmed';
       default: return 'status-default';
     }
   }
 
-  getPriceTypeLabel(priceType: string): string {
-    switch (priceType) {
-      case 'wholesale': return 'Mayorista';
-      case 'custom': return 'Por encargo';
-      case 'retail': return 'Al público';
-      default: return priceType;
+  getPriceTypeLabel(tipoVenta: string): string {
+    switch (tipoVenta) {
+      case 'MAYORISTA': return 'Mayorista';
+      case 'POR_ENCARGO': return 'Por encargo';
+      case 'AL_PUBLICO': return 'Al público';
+      default: return tipoVenta;
     }
   }
 

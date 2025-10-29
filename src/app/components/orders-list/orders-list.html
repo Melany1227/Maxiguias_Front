@@ -16,7 +16,7 @@
       <input 
         type="text" 
         class="form-control" 
-        placeholder="Buscar por cliente, email o ID..." 
+        placeholder="Buscar por cliente, apellido, usuario o ID..." 
         [(ngModel)]="searchTerm"
         (input)="applyFilters()"
       >
@@ -63,8 +63,8 @@
           <span class="id-number">{{order.id}}</span>
         </div>
         <div class="order-status">
-          <span class="status-badge" [ngClass]="getStatusClass(order.status)">
-            {{getStatusLabel(order.status)}}
+          <span class="status-badge" [ngClass]="getStatusClass(order.estado)">
+            {{getStatusLabel(order.estado)}}
           </span>
         </div>
       </div>
@@ -72,13 +72,16 @@
       <div class="order-content">
         <div class="customer-info">
           <h4>
-            👤 {{order.customerName}}
+            👤 {{order.usuario.nombre}} {{order.usuario.primerApellido}} {{order.usuario.segundoApellido}}
           </h4>
           <p class="customer-contact">
-            ✉️ {{order.customerEmail}}
+            👤 Usuario: {{order.usuario.nombreUsuario}}
           </p>
           <p class="customer-contact">
-            📞 {{order.customerPhone}}
+            📞 {{order.usuario.telefono}}
+          </p>
+          <p class="customer-contact" *ngIf="order.usuario.direccion">
+            🏠 {{order.usuario.direccion}}
           </p>
         </div>
 
@@ -86,25 +89,25 @@
           <div class="order-meta">
             <div class="meta-item">
               <span class="meta-label">Fecha:</span>
-              <span class="meta-value">{{formatDate(order.orderDate)}}</span>
+              <span class="meta-value">{{formatDate(order.fechaPedido)}}</span>
             </div>
-            <div class="meta-item" *ngIf="order.deliveryDate">
+            <div class="meta-item" *ngIf="order.fechaEntrega">
               <span class="meta-label">Entrega:</span>
-              <span class="meta-value">{{formatDate(order.deliveryDate)}}</span>
+              <span class="meta-value">{{formatDate(order.fechaEntrega)}}</span>
             </div>
             <div class="meta-item">
               <span class="meta-label">Tipo precio:</span>
-              <span class="meta-value">{{getPriceTypeLabel(order.priceType)}}</span>
+              <span class="meta-value">{{getPriceTypeLabel(order.tipoVenta)}}</span>
             </div>
             <div class="meta-item">
               <span class="meta-label">Items:</span>
-              <span class="meta-value">{{order.items.length}} producto(s)</span>
+              <span class="meta-value">{{order.detalles.length}} producto(s)</span>
             </div>
           </div>
 
           <div class="order-total">
             <span class="total-label">Total:</span>
-            <span class="total-amount">${{order.totalAmount}}</span>
+            <span class="total-amount">${{order.total}}</span>
           </div>
         </div>
       </div>
@@ -112,14 +115,14 @@
       <div class="order-actions">
         <div class="status-controls">
           <select 
-            [value]="order.status" 
+            [value]="order.estado" 
             (change)="updateStatus(order.id, $any($event.target).value)" 
             class="status-select">
-            <option value="pending">Pendiente</option>
-            <option value="confirmed">Confirmado</option>
-            <option value="in_progress">En progreso</option>
-            <option value="completed">Completado</option>
-            <option value="cancelled">Cancelado</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="EN_PROCESO">En Proceso</option>
+            <option value="FINALIZADA">Finalizada</option>
+            <option value="CANCELADA">Cancelada</option>
+            <option value="FACTURADA">Facturada</option>
           </select>
         </div>
         
@@ -128,9 +131,9 @@
         </button>
       </div>
 
-      <div class="order-notes" *ngIf="order.notes">
+      <div class="order-notes" *ngIf="order.notas">
         <p>
-          📝 <strong>Notas:</strong> {{order.notes}}
+          📝 <strong>Notas:</strong> {{order.notas}}
         </p>
       </div>
     </div>

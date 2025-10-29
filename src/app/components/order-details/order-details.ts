@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CartService, Order } from '../../services/cart.service';
+import { OrdersService, Orden } from '../../services/orders.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-order-details',
@@ -9,70 +10,92 @@ import { CartService, Order } from '../../services/cart.service';
   templateUrl: './order-details.html',
   styleUrl: './order-details.css'
 })
-export class OrderDetails implements OnInit {
-  order: Order | null = null;
-  orderId: number = 0;
+export class OrderDetails implements OnInit, OnDestroy {
+  order: Orden | null = null;
+  loading: boolean = true;
+  error: string | null = null;
+
+  statusOptions = [
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'EN_PROCESO', label: 'En Proceso' },
+    { value: 'FINALIZADA', label: 'Finalizada' },
+    { value: 'CANCELADA', label: 'Cancelada' },
+    { value: 'FACTURADA', label: 'Facturada' }
+  ];
+
+  private subscription: Subscription = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private cartService: CartService
+    private ordersService: OrdersService
   ) {}
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      this.orderId = +params['id'];
-      this.loadOrder();
-    });
+    const orderId = this.route.snapshot.paramMap.get('id');
+    if (orderId) {
+      this.loadOrder(+orderId);
+    } else {
+      this.error = 'ID de orden no válido';
+      this.loading = false;
+    }
   }
 
-  loadOrder() {
-    const foundOrder = this.cartService.getOrderById(this.orderId);
-    this.order = foundOrder || null;
-    if (!this.order) {
-      this.router.navigate(['/orders']);
-    }
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  loadOrder(id: number) {
+    this.loading = true;
+    this.subscription.add(
+      this.ordersService.getOrdenById(id).subscribe({
+        next: (order) => {
+          this.order = order;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading order:', error);
+          this.error = 'Error al cargar la orden';
+          this.loading = false;
+        }
+      })
+    );
   }
 
   goBack() {
     this.router.navigate(['/orders']);
   }
 
-  updateStatus(newStatus: Order['status']) {
+  updateStatus(newStatus: string) {
     if (this.order) {
-      this.cartService.updateOrderStatus(this.order.id, newStatus);
-      this.order.status = newStatus;
+      // TODO: Implement status update API call
+      console.log('Update status:', this.order.id, newStatus);
+      this.order.estado = newStatus;
     }
   }
 
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'pending': return 'Pendiente';
-      case 'confirmed': return 'Confirmado';
-      case 'in_progress': return 'En progreso';
-      case 'completed': return 'Completado';
-      case 'cancelled': return 'Cancelado';
-      default: return status;
-    }
+  getStatusLabel(estado: string): string {
+    const statusOption = this.statusOptions.find(option => option.value === estado);
+    return statusOption ? statusOption.label : estado;
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'pending': return 'status-pending';
-      case 'confirmed': return 'status-confirmed';
-      case 'in_progress': return 'status-progress';
-      case 'completed': return 'status-completed';
-      case 'cancelled': return 'status-cancelled';
+  getStatusClass(estado: string): string {
+    switch (estado) {
+      case 'PENDIENTE': return 'status-pending';
+      case 'EN_PROCESO': return 'status-progress';
+      case 'FINALIZADA': return 'status-completed';
+      case 'CANCELADA': return 'status-cancelled';
+      case 'FACTURADA': return 'status-confirmed';
       default: return 'status-default';
     }
   }
 
-  getPriceTypeLabel(priceType: string): string {
-    switch (priceType) {
-      case 'wholesale': return 'Mayorista';
-      case 'custom': return 'Por encargo';
-      case 'retail': return 'Al público';
-      default: return priceType;
+  getPriceTypeLabel(tipoVenta: string): string {
+    switch (tipoVenta) {
+      case 'MAYORISTA': return 'Mayorista';
+      case 'POR_ENCARGO': return 'Por encargo';
+      case 'AL_PUBLICO': return 'Al público';
+      default: return tipoVenta;
     }
   }
 
@@ -84,6 +107,18 @@ export class OrderDetails implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  getTotalItems(): number {
+    return this.order?.detalles.reduce((total, detalle) => total + detalle.cantidad, 0) || 0;
   }
 
   printOrder() {

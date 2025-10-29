@@ -1,161 +1,159 @@
-<div class="order-details-container" *ngIf="order">
-  <!-- Header -->
-  <div class="order-header">
-    <div class="header-left">
-      <button class="btn-back" (click)="goBack()">
-        <i class="fa-solid fa-arrow-left"></i>
-        Volver a pedidos
-      </button>
-      <h2>
-        <i class="fa-solid fa-file-invoice"></i>
-        Pedido #{{order.id}}
-      </h2>
-    </div>
-    
-    <div class="header-actions">
-      <button class="btn-print" (click)="printOrder()">
-        <i class="fa-solid fa-print"></i>
-        Imprimir
-      </button>
-      <div class="status-badge" [ngClass]="getStatusClass(order.status)">
-        {{getStatusLabel(order.status)}}
-      </div>
-    </div>
+<div class="order-details-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner">⏳</div>
+    <p>Cargando detalles del pedido...</p>
   </div>
 
-  <!-- Order Information -->
-  <div class="order-info-grid">
-    <!-- Customer Information -->
-    <div class="info-card">
-      <h3>
-        <i class="fa-solid fa-user"></i>
-        Información del Cliente
-      </h3>
-      <div class="info-content">
-        <div class="info-row">
-          <span class="info-label">Nombre:</span>
-          <span class="info-value">{{order.customerName}}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Email:</span>
-          <span class="info-value">{{order.customerEmail}}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Teléfono:</span>
-          <span class="info-value">{{order.customerPhone}}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Order Information -->
-    <div class="info-card">
-      <h3>
-        <i class="fa-solid fa-calendar"></i>
-        Información del Pedido
-      </h3>
-      <div class="info-content">
-        <div class="info-row">
-          <span class="info-label">Fecha de pedido:</span>
-          <span class="info-value">{{formatDate(order.orderDate)}}</span>
-        </div>
-        <div class="info-row" *ngIf="order.deliveryDate">
-          <span class="info-label">Fecha de entrega:</span>
-          <span class="info-value">{{formatDate(order.deliveryDate)}}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Tipo de precio:</span>
-          <span class="info-value">{{getPriceTypeLabel(order.priceType)}}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Total de items:</span>
-          <span class="info-value">{{order.items.length}} producto(s)</span>
-        </div>
-      </div>
-    </div>
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !loading">
+    <div class="error-icon">❌</div>
+    <h3>Error</h3>
+    <p>{{error}}</p>
+    <button class="btn btn-primary" (click)="goBack()">
+      ⬅️ Volver a pedidos
+    </button>
   </div>
 
-  <!-- Status Control -->
-  <div class="status-control-card">
-    <h3>
-      <i class="fa-solid fa-tasks"></i>
-      Control de Estado
-    </h3>
-    <div class="status-controls">
-      <label for="orderStatus">Cambiar estado del pedido:</label>
-      <select 
-        id="orderStatus"
-        [value]="order.status" 
-        (change)="updateStatus($any($event.target).value)" 
-        class="status-select">
-        <option value="pending">Pendiente</option>
-        <option value="confirmed">Confirmado</option>
-        <option value="in_progress">En progreso</option>
-        <option value="completed">Completado</option>
-        <option value="cancelled">Cancelado</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Order Items -->
-  <div class="items-card">
-    <h3>
-      <i class="fa-solid fa-box"></i>
-      Productos del Pedido
-    </h3>
-    
-    <div class="items-table">
-      <div class="table-header">
-        <div class="col-product">Producto</div>
-        <div class="col-quantity">Cantidad</div>
-        <div class="col-price">Precio Unit.</div>
-        <div class="col-subtotal">Subtotal</div>
+  <!-- Order Details -->
+  <div class="order-content" *ngIf="order && !loading && !error">
+    <!-- Header -->
+    <div class="order-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="goBack()">
+          ⬅️ Volver a pedidos
+        </button>
+        <h2>📋 Pedido #{{order.id}}</h2>
       </div>
       
-      <div class="table-row" *ngFor="let item of order.items">
-        <div class="col-product">
-          <div class="product-info">
-            <span class="product-name">{{item.productName}}</span>
-            <span class="product-id">ID: {{item.productId}}</span>
+      <div class="header-actions">
+        <button class="btn-print" (click)="printOrder()">
+          🖨️ Imprimir
+        </button>
+        <div class="status-badge" [ngClass]="getStatusClass(order.estado)">
+          {{getStatusLabel(order.estado)}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Information Grid -->
+    <div class="order-info-grid">
+      <!-- Customer Information -->
+      <div class="info-card">
+        <h3>👤 Información del Cliente</h3>
+        <div class="info-content">
+          <div class="info-row">
+            <span class="info-label">Nombre completo:</span>
+            <span class="info-value">{{order.usuario.nombre}} {{order.usuario.primerApellido}} {{order.usuario.segundoApellido}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Documento:</span>
+            <span class="info-value">{{order.usuario.documento}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Usuario:</span>
+            <span class="info-value">{{order.usuario.nombreUsuario}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Teléfono:</span>
+            <span class="info-value">{{order.usuario.telefono}}</span>
+          </div>
+          <div class="info-row" *ngIf="order.usuario.direccion">
+            <span class="info-label">Dirección:</span>
+            <span class="info-value">{{order.usuario.direccion}}</span>
           </div>
         </div>
-        <div class="col-quantity">{{item.quantity}}</div>
-        <div class="col-price">${{item.unitPrice}}</div>
-        <div class="col-subtotal">${{item.subtotal}}</div>
+      </div>
+
+      <!-- Order Information -->
+      <div class="info-card">
+        <h3>📅 Información del Pedido</h3>
+        <div class="info-content">
+          <div class="info-row">
+            <span class="info-label">Fecha de pedido:</span>
+            <span class="info-value">{{formatDate(order.fechaPedido)}}</span>
+          </div>
+          <div class="info-row" *ngIf="order.fechaEntrega">
+            <span class="info-label">Fecha de entrega:</span>
+            <span class="info-value">{{formatDate(order.fechaEntrega)}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Tipo de venta:</span>
+            <span class="info-value">{{getPriceTypeLabel(order.tipoVenta)}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Total de items:</span>
+            <span class="info-value">{{getTotalItems()}} producto(s)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Productos únicos:</span>
+            <span class="info-value">{{order.detalles.length}} tipo(s)</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Order Total -->
-    <div class="order-total-section">
-      <div class="total-row">
-        <span class="total-label">Subtotal:</span>
-        <span class="total-amount">${{order.totalAmount}}</span>
+    <!-- Status Control -->
+    <div class="status-control-card">
+      <h3>⚙️ Control de Estado</h3>
+      <div class="status-controls">
+        <label for="orderStatus">Cambiar estado del pedido:</label>
+        <select 
+          id="orderStatus"
+          [value]="order.estado" 
+          (change)="updateStatus($any($event.target).value)" 
+          class="status-select">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{status.label}}
+          </option>
+        </select>
       </div>
-      <div class="total-row final-total">
-        <span class="total-label">Total:</span>
-        <span class="total-amount">${{order.totalAmount}}</span>
+    </div>
+
+    <!-- Order Items -->
+    <div class="items-card">
+      <h3>📦 Productos del Pedido</h3>
+      
+      <div class="items-table">
+        <div class="table-header">
+          <div class="col-product">Producto</div>
+          <div class="col-quantity">Cantidad</div>
+          <div class="col-price">Precio Unit.</div>
+          <div class="col-subtotal">Subtotal</div>
+        </div>
+        
+        <div class="table-row" *ngFor="let detalle of order.detalles">
+          <div class="col-product">
+            <div class="product-info">
+              <span class="product-name">{{detalle.nombreProducto}}</span>
+              <span class="product-id">ID: {{detalle.idProducto}}</span>
+            </div>
+          </div>
+          <div class="col-quantity">{{detalle.cantidad}}</div>
+          <div class="col-price">{{formatCurrency(detalle.precioUnitario)}}</div>
+          <div class="col-subtotal">{{formatCurrency(detalle.subtotal)}}</div>
+        </div>
+      </div>
+
+      <!-- Order Total -->
+      <div class="order-total-section">
+        <div class="total-row">
+          <span class="total-label">Subtotal:</span>
+          <span class="total-amount">{{formatCurrency(order.total)}}</span>
+        </div>
+        <div class="total-row final-total">
+          <span class="total-label">Total:</span>
+          <span class="total-amount">{{formatCurrency(order.total)}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="notes-card" *ngIf="order.notas">
+      <h3>📝 Notas Adicionales</h3>
+      <div class="notes-content">
+        <p>{{order.notas}}</p>
       </div>
     </div>
   </div>
-
-  <!-- Notes -->
-  <div class="notes-card" *ngIf="order.notes">
-    <h3>
-      <i class="fa-solid fa-sticky-note"></i>
-      Notas Adicionales
-    </h3>
-    <div class="notes-content">
-      <p>{{order.notes}}</p>
-    </div>
-  </div>
-</div>
-
-<!-- Order Not Found -->
-<div class="order-not-found" *ngIf="!order">
-  <i class="fa-solid fa-exclamation-triangle"></i>
-  <h3>Pedido no encontrado</h3>
-  <p>El pedido con ID #{{orderId}} no existe o ha sido eliminado.</p>
-  <button class="btn-back-to-orders" (click)="goBack()">
-    <i class="fa-solid fa-arrow-left"></i>
-    Volver a pedidos
-  </button>
 </div>
