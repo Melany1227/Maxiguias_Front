@@ -85,6 +85,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
 }
 
 .form-group label {
@@ -304,4 +305,75 @@ textarea.form-control {
   .order-header h2 {
     font-size: 1.5rem;
   }
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-result-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.user-info strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.user-info small {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.selected-user {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #e8f5e8;
+  border: 1px solid #c8e6c9;
+  border-radius: 4px;
+}
+
+.selected-user h4 {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+}
+
+.user-details p {
+  margin: 5px 0;
+}
+
+.btn-change-user {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.btn-change-user:hover {
+  background-color: #f57c00;
 }

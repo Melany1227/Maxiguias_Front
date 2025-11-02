@@ -107,7 +107,7 @@
 
           <div class="order-total">
             <span class="total-label">Total:</span>
-            <span class="total-amount">${{order.total}}</span>
+            <span class="total-amount">{{formatCurrency(order.total || 0)}}</span>
           </div>
         </div>
       </div>
@@ -126,8 +126,9 @@
           </select>
         </div>
         
-        <button class="btn-action btn-view" (click)="viewOrder(order.id)">
-          👁️
+        <button class="btn-action btn-view" (click)="viewOrder(order.id)" title="Ver detalles">
+          <i class="fa-solid fa-eye"></i>
+          Ver detalles
         </button>
       </div>
 

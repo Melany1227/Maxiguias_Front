@@ -111,7 +111,7 @@ export class Catalog implements OnInit, OnDestroy {
         image: 'assets/images/GuiaR.png'
       };
       
-      this.cartService.addToCart(cartProduct, 1, 'retail');
+      this.cartService.addToCart(cartProduct, 1, 'retail', selectedTerminado.id);
       console.log(`✅ Producto ${producto.nombre} agregado al carrito`);
       alert(`✅ ${producto.nombre} agregado al carrito`);
     } catch (error) {

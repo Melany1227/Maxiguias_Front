@@ -22,6 +22,7 @@ export interface CartItem {
   priceType: 'wholesale' | 'custom' | 'retail';
   unitPrice: number;
   subtotal: number;
+  terminadoId: number;
 }
 
 export interface Order {
@@ -62,8 +63,13 @@ export class CartService {
   }
 
   // Cart Methods
-  addToCart(product: Product, quantity: number = 1, priceType: 'wholesale' | 'custom' | 'retail' = 'retail') {
-    console.log('🛒 CartService.addToCart llamado:', { product: product.name, quantity, priceType });
+  addToCart(product: Product, quantity: number = 1, priceType: 'wholesale' | 'custom' | 'retail' = 'retail', terminadoId?: number) {
+    console.log('🛒 CartService.addToCart llamado:', { product: product.name, quantity, priceType, terminadoId });
+    
+    if (!terminadoId) {
+      console.error('⚠️ terminadoId es requerido');
+      throw new Error('terminadoId es requerido para agregar al carrito');
+    }
     
     const currentItems = this.cartItems.value;
     console.log('📦 Items actuales en carrito:', currentItems.length);
@@ -72,7 +78,7 @@ export class CartService {
     console.log('💰 Precio unitario:', unitPrice);
     
     const existingItemIndex = currentItems.findIndex(
-      item => item.product.id === product.id && item.priceType === priceType
+      item => item.product.id === product.id && item.priceType === priceType && item.terminadoId === terminadoId
     );
 
     if (existingItemIndex > -1) {
@@ -86,7 +92,8 @@ export class CartService {
         quantity,
         priceType,
         unitPrice,
-        subtotal: quantity * unitPrice
+        subtotal: quantity * unitPrice,
+        terminadoId
       };
       currentItems.push(newItem);
     }
@@ -97,23 +104,23 @@ export class CartService {
     console.log('✅ Item agregado al carrito exitosamente');
   }
 
-  removeFromCart(productId: number, priceType: 'wholesale' | 'custom' | 'retail') {
+  removeFromCart(productId: number, priceType: 'wholesale' | 'custom' | 'retail', terminadoId?: number) {
     const currentItems = this.cartItems.value.filter(
-      item => !(item.product.id === productId && item.priceType === priceType)
+      item => !(item.product.id === productId && item.priceType === priceType && (terminadoId ? item.terminadoId === terminadoId : true))
     );
     this.cartItems.next(currentItems);
     this.saveCartToStorage();
   }
 
-  updateQuantity(productId: number, priceType: 'wholesale' | 'custom' | 'retail', quantity: number) {
+  updateQuantity(productId: number, priceType: 'wholesale' | 'custom' | 'retail', quantity: number, terminadoId?: number) {
     const currentItems = this.cartItems.value;
     const itemIndex = currentItems.findIndex(
-      item => item.product.id === productId && item.priceType === priceType
+      item => item.product.id === productId && item.priceType === priceType && (terminadoId ? item.terminadoId === terminadoId : true)
     );
 
     if (itemIndex > -1) {
       if (quantity <= 0) {
-        this.removeFromCart(productId, priceType);
+        this.removeFromCart(productId, priceType, terminadoId);
       } else {
         currentItems[itemIndex].quantity = quantity;
         currentItems[itemIndex].subtotal = quantity * currentItems[itemIndex].unitPrice;
@@ -212,7 +219,20 @@ export class CartService {
     if (typeof localStorage !== 'undefined') {
       const saved = localStorage.getItem('cart');
       if (saved) {
-        this.cartItems.next(JSON.parse(saved));
+        try {
+          const items = JSON.parse(saved);
+          // Verificar que todos los items tengan terminadoId
+          const validItems = items.filter((item: any) => item.terminadoId != null);
+          this.cartItems.next(validItems);
+          
+          // Si hubo items inválidos, guardar la versión limpia
+          if (validItems.length !== items.length) {
+            this.saveCartToStorage();
+          }
+        } catch (error) {
+          console.error('Error loading cart from storage:', error);
+          this.cartItems.next([]);
+        }
       }
     }
   }

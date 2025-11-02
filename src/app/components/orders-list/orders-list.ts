@@ -79,7 +79,7 @@ export class OrdersList implements OnInit, OnDestroy {
         case 'customer':
           return a.usuario.nombre.localeCompare(b.usuario.nombre);
         case 'total':
-          return b.total - a.total;
+          return (b.total || b.totalFactura || 0) - (a.total || a.totalFactura || 0);
         case 'status':
           return a.estado.localeCompare(b.estado);
         default:
@@ -134,5 +134,13 @@ export class OrdersList implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(amount);
   }
 }

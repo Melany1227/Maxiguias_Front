@@ -21,60 +21,62 @@
       
       <form (ngSubmit)="onSubmit()" #orderForm="ngForm" class="customer-form">
         <div class="form-group">
-          <label for="customerName">Nombre completo *</label>
+          <label for="customerSearch">Buscar Cliente *</label>
           <input 
             type="text" 
-            id="customerName"
-            name="customerName"
-            [(ngModel)]="customerInfo.name"
+            id="customerSearch"
+            name="customerSearch"
+            [(ngModel)]="searchTerm"
+            (input)="onSearchTermChange()"
             required
             class="form-control"
-            placeholder="Ingresa el nombre completo">
+            placeholder="Buscar por nombre o documento...">
+          
+          <div class="search-results" *ngIf="searchResults.length > 0">
+            <div 
+              class="search-result-item" 
+              *ngFor="let usuario of searchResults"
+              (click)="selectUser(usuario)">
+              <div class="user-info">
+                <strong>{{usuario.nombre}} {{usuario.primerApellido}}</strong>
+                <small>Doc: {{usuario.documento}} | Tel: {{usuario.telefono}} | Tipo: {{usuario.tipoUsuario?.nombre || 'NATURAL'}}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="selected-user" *ngIf="selectedUser">
+          <h4>Cliente Seleccionado:</h4>
+          <div class="user-details">
+            <p><strong>Nombre:</strong> {{selectedUser.nombre}} {{selectedUser.primerApellido}}</p>
+            <p><strong>Documento:</strong> {{selectedUser.documento}}</p>
+            <p><strong>Teléfono:</strong> {{selectedUser.telefono}}</p>
+            <p><strong>Tipo:</strong> {{selectedUser.tipoUsuario?.nombre || 'NATURAL'}}</p>
+            <button type="button" class="btn-change-user" (click)="clearSelection()">Cambiar Cliente</button>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="customerEmail">Correo electrónico *</label>
-          <input 
-            type="email" 
-            id="customerEmail"
-            name="customerEmail"
-            [(ngModel)]="customerInfo.email"
-            required
-            class="form-control"
-            placeholder="correo@ejemplo.com">
-        </div>
-
-        <div class="form-group">
-          <label for="customerPhone">Teléfono *</label>
-          <input 
-            type="tel" 
-            id="customerPhone"
-            name="customerPhone"
-            [(ngModel)]="customerInfo.phone"
-            required
-            class="form-control"
-            placeholder="+57 300 123 4567">
-        </div>
-
-        <div class="form-group">
-          <label for="deliveryDate">Fecha de entrega (opcional)</label>
+          <label for="deliveryDate">Fecha de entrega *</label>
           <input 
             type="date" 
             id="deliveryDate"
             name="deliveryDate"
-            [(ngModel)]="customerInfo.deliveryDate"
+            [(ngModel)]="deliveryDate"
+            required
             class="form-control">
         </div>
 
         <div class="form-group">
-          <label for="notes">Notas adicionales (opcional)</label>
+          <label for="notes">Descripción de la venta *</label>
           <textarea 
             id="notes"
             name="notes"
-            [(ngModel)]="customerInfo.notes"
+            [(ngModel)]="description"
+            required
             class="form-control"
             rows="3"
-            placeholder="Instrucciones especiales, comentarios, etc."></textarea>
+            placeholder="Descripción de los productos vendidos..."></textarea>
         </div>
       </form>
     </div>
@@ -97,8 +99,8 @@
                 <span class="price-type">{{getPriceTypeLabel(item.priceType)}}</span>
               </p>
               <div class="item-pricing">
-                <span class="quantity">{{item.quantity}} x ${{item.unitPrice}}</span>
-                <span class="subtotal">${{item.subtotal}}</span>
+                <span class="quantity">{{item.quantity}} x ${{getDynamicPrice(item)}}</span>
+                <span class="subtotal">${{getDynamicSubtotal(item)}}</span>
               </div>
             </div>
           </div>
@@ -108,11 +110,11 @@
       <div class="summary-total">
         <div class="total-row">
           <span class="total-label">Subtotal:</span>
-          <span class="total-amount">${{cartTotal}}</span>
+          <span class="total-amount">${{getDynamicTotal()}}</span>
         </div>
         <div class="total-row final-total">
           <span class="total-label">Total:</span>
-          <span class="total-amount">${{cartTotal}}</span>
+          <span class="total-amount">${{getDynamicTotal()}}</span>
         </div>
       </div>
 

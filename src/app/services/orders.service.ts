@@ -22,6 +22,23 @@ export interface Usuario {
   nombreUsuario: string;
   contrasena: string;
   fechaRegistro: Date;
+  tipoUsuario?: {
+    id: number;
+    nombre: string;
+  };
+}
+
+export interface CrearOrdenRequest {
+  orden: {
+    usuario: Usuario;
+    fechaEntrega: Date;
+    descripcionVenta: string;
+    totalFactura: number;
+  };
+  terminadosId: number[];
+  cantidades: number[];
+  valores: number[];
+  descripciones: string[];
 }
 
 export interface Orden {
@@ -31,7 +48,8 @@ export interface Orden {
   fechaEntrega?: Date;
   estado: string;
   tipoVenta: string;
-  total: number;
+  totalFactura?: number;
+  total?: number; // Para compatibilidad
   notas?: string;
   detalles: DetalleOrden[];
 }
@@ -76,6 +94,7 @@ export class OrdersService {
         ...response,
         content: response.content.map(orden => ({
           ...orden,
+          total: orden.totalFactura || orden.total || 0, // Mapear totalFactura a total para compatibilidad
           fechaPedido: new Date(orden.fechaPedido),
           fechaEntrega: orden.fechaEntrega ? new Date(orden.fechaEntrega) : undefined,
           usuario: {
@@ -91,6 +110,7 @@ export class OrdersService {
     return this.http.get<Orden>(`${this.baseUrl}/${id}`).pipe(
       map(orden => ({
         ...orden,
+        total: orden.totalFactura || orden.total || 0, // Mapear totalFactura a total para compatibilidad
         fechaPedido: new Date(orden.fechaPedido),
         fechaEntrega: orden.fechaEntrega ? new Date(orden.fechaEntrega) : undefined,
         usuario: {
@@ -115,5 +135,16 @@ export class OrdersService {
 
   refreshOrders(): void {
     this.loadOrdenesAndUpdate();
+  }
+
+  buscarUsuarios(termino: string): Observable<Usuario[]> {
+    const params = new HttpParams().set('termino', termino);
+    return this.http.get<Usuario[]>(`${this.baseUrl}/buscar-usuarios`, { params });
+  }
+
+  crearOrden(request: CrearOrdenRequest): Observable<string> {
+    return this.http.post(this.baseUrl, request, {
+      responseType: 'text'
+    });
   }
 }
