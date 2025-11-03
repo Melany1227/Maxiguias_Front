@@ -96,10 +96,6 @@
               <span class="meta-value">{{formatDate(order.fechaEntrega)}}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">Tipo precio:</span>
-              <span class="meta-value">{{getPriceTypeLabel(order.tipoVenta)}}</span>
-            </div>
-            <div class="meta-item">
               <span class="meta-label">Items:</span>
               <span class="meta-value">{{order.detalles.length}} producto(s)</span>
             </div>
@@ -113,20 +109,7 @@
       </div>
 
       <div class="order-actions">
-        <div class="status-controls">
-          <select 
-            [value]="order.estado" 
-            (change)="updateStatus(order.id, $any($event.target).value)" 
-            class="status-select">
-            <option value="PENDIENTE">Pendiente</option>
-            <option value="EN_PROCESO">En Proceso</option>
-            <option value="FINALIZADA">Finalizada</option>
-            <option value="CANCELADA">Cancelada</option>
-            <option value="FACTURADA">Facturada</option>
-          </select>
-        </div>
-        
-        <button class="btn-action btn-view" (click)="viewOrder(order.id)" title="Ver detalles">
+        <button class="btn-view" (click)="viewOrder(order.id)" title="Ver detalles">
           <i class="fa-solid fa-eye"></i>
           Ver detalles
         </button>

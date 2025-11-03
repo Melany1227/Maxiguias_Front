@@ -450,7 +450,7 @@
 
 .order-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 1rem 1.5rem;
   background: #f8f9fa;

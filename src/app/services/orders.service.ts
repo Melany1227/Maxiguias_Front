@@ -3,13 +3,27 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export interface DetalleOrden {
+export interface Terminado {
   id: number;
-  idProducto: number;
-  nombreProducto: string;
+  medidaTerminadoProducto: number;
+  precioPublico: number;
+  precioPorMayor: number;
+  precioPorEncargo: number;
+  gananciaXMayor?: number;
+  gananciaXEncargo?: number;
+  producto: {
+    id: number;
+    nombre: string;
+    imagen?: string;
+    cantidadDisponible: number;
+  };
+}
+
+export interface DetalleOrden {
+  terminado: Terminado;
+  descripcion: string;
   cantidad: number;
-  precioUnitario: number;
-  subtotal: number;
+  valor: number;
 }
 
 export interface Usuario {
@@ -21,7 +35,7 @@ export interface Usuario {
   telefono: number;
   nombreUsuario: string;
   contrasena: string;
-  fechaRegistro: Date;
+  fechaRegistro?: Date;
   tipoUsuario?: {
     id: number;
     nombre: string;
@@ -41,13 +55,25 @@ export interface CrearOrdenRequest {
   descripciones: string[];
 }
 
+export interface OrdenBackend {
+  id: number;
+  usuario: Usuario;
+  fechaOrden: string;
+  fechaEntrega?: string;
+  estado: string;
+  descripcionVenta?: string;
+  totalFactura?: number;
+  total?: number;
+  notas?: string;
+  detalles: DetalleOrden[];
+}
+
 export interface Orden {
   id: number;
   usuario: Usuario;
   fechaPedido: Date;
   fechaEntrega?: Date;
   estado: string;
-  tipoVenta: string;
   totalFactura?: number;
   total?: number; // Para compatibilidad
   notas?: string;
@@ -64,6 +90,11 @@ export interface PageResponse<T> {
   last: boolean;
 }
 
+export interface OrdenDetalleResponse {
+  orden: OrdenBackend;
+  detalles: DetalleOrden[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -74,7 +105,7 @@ export class OrdersService {
 
   constructor(private http: HttpClient) {}
 
-  getOrdenes(page: number = 0, size: number = 10, sortBy: string = 'fechaPedido', sortDir: string = 'desc', estado?: string, tipoVenta?: string): Observable<PageResponse<Orden>> {
+  getOrdenes(page: number = 0, size: number = 10, sortBy: string = 'fechaOrden', sortDir: string = 'desc', estado?: string): Observable<PageResponse<Orden>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
@@ -85,21 +116,17 @@ export class OrdersService {
       params = params.set('estado', estado);
     }
 
-    if (tipoVenta && tipoVenta.trim() !== '') {
-      params = params.set('tipoVenta', tipoVenta);
-    }
-
-    return this.http.get<PageResponse<Orden>>(this.baseUrl, { params }).pipe(
+    return this.http.get<PageResponse<OrdenBackend>>(this.baseUrl, { params }).pipe(
       map(response => ({
         ...response,
         content: response.content.map(orden => ({
           ...orden,
-          total: orden.totalFactura || orden.total || 0, // Mapear totalFactura a total para compatibilidad
-          fechaPedido: new Date(orden.fechaPedido),
+          total: orden.totalFactura || orden.total || 0,
+          fechaPedido: new Date(orden.fechaOrden),
           fechaEntrega: orden.fechaEntrega ? new Date(orden.fechaEntrega) : undefined,
           usuario: {
             ...orden.usuario,
-            fechaRegistro: new Date(orden.usuario.fechaRegistro)
+            fechaRegistro: orden.usuario.fechaRegistro ? new Date(orden.usuario.fechaRegistro) : undefined
           }
         }))
       }))
@@ -107,17 +134,23 @@ export class OrdersService {
   }
 
   getOrdenById(id: number): Observable<Orden> {
-    return this.http.get<Orden>(`${this.baseUrl}/${id}`).pipe(
-      map(orden => ({
-        ...orden,
-        total: orden.totalFactura || orden.total || 0, // Mapear totalFactura a total para compatibilidad
-        fechaPedido: new Date(orden.fechaPedido),
-        fechaEntrega: orden.fechaEntrega ? new Date(orden.fechaEntrega) : undefined,
-        usuario: {
-          ...orden.usuario,
-          fechaRegistro: new Date(orden.usuario.fechaRegistro)
-        }
-      }))
+    return this.http.get<OrdenDetalleResponse>(`${this.baseUrl}/${id}`).pipe(
+      map(response => {
+        const orden = response.orden;
+        const detalles = response.detalles || orden.detalles || [];
+        
+        return {
+          ...orden,
+          detalles,
+          total: orden.totalFactura || orden.total || 0,
+          fechaPedido: new Date(orden.fechaOrden),
+          fechaEntrega: orden.fechaEntrega ? new Date(orden.fechaEntrega) : undefined,
+          usuario: {
+            ...orden.usuario,
+            fechaRegistro: orden.usuario.fechaRegistro ? new Date(orden.usuario.fechaRegistro) : undefined
+          }
+        };
+      })
     );
   }
 

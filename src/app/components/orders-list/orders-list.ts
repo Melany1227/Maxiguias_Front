@@ -117,17 +117,17 @@ export class OrdersList implements OnInit, OnDestroy {
     }
   }
 
-  getPriceTypeLabel(tipoVenta: string): string {
-    switch (tipoVenta) {
-      case 'MAYORISTA': return 'Mayorista';
-      case 'POR_ENCARGO': return 'Por encargo';
-      case 'AL_PUBLICO': return 'Al público';
-      default: return tipoVenta;
-    }
-  }
 
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('es-CO', {
+  formatDate(date: Date | string): string {
+    if (!date) return 'No disponible';
+    
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    if (isNaN(dateObj.getTime())) {
+      return 'Fecha inválida';
+    }
+    
+    return dateObj.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

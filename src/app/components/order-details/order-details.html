@@ -78,10 +78,6 @@
             <span class="info-value">{{formatDate(order.fechaEntrega)}}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Tipo de venta:</span>
-            <span class="info-value">{{getPriceTypeLabel(order.tipoVenta)}}</span>
-          </div>
-          <div class="info-row">
             <span class="info-label">Total de items:</span>
             <span class="info-value">{{getTotalItems()}} producto(s)</span>
           </div>
@@ -125,13 +121,15 @@
         <div class="table-row" *ngFor="let detalle of order.detalles">
           <div class="col-product">
             <div class="product-info">
-              <span class="product-name">{{detalle.nombreProducto}}</span>
-              <span class="product-id">ID: {{detalle.idProducto}}</span>
+              <span class="product-name">{{detalle.descripcion}}</span>
+              <span class="product-id" *ngIf="detalle.terminado?.producto">
+                {{detalle.terminado.producto.nombre}} - {{detalle.terminado.medidaTerminadoProducto}}m
+              </span>
             </div>
           </div>
           <div class="col-quantity">{{detalle.cantidad}}</div>
-          <div class="col-price">{{formatCurrency(detalle.precioUnitario)}}</div>
-          <div class="col-subtotal">{{formatCurrency(detalle.subtotal)}}</div>
+          <div class="col-price">{{formatCurrency(detalle.valor)}}</div>
+          <div class="col-subtotal">{{formatCurrency(detalle.valor * detalle.cantidad)}}</div>
         </div>
       </div>
 
