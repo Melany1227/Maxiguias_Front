@@ -45,14 +45,14 @@
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
 }
 
 .btn-primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 /* Header */
@@ -72,8 +72,8 @@
 }
 
 .btn-back {
-  background: #6c757d;
-  color: white;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -86,7 +86,7 @@
 }
 
 .btn-back:hover {
-  background: #5a6268;
+  background: var(--color-gray-dark);
 }
 
 .order-header h2 {
@@ -97,7 +97,7 @@
 }
 
 .order-header h2 i {
-  color: #3498db;
+  color: var(--color-primary);
   margin-right: 0.5rem;
 }
 
@@ -108,8 +108,8 @@
 }
 
 .btn-print {
-  background: #17a2b8;
-  color: white;
+  background: var(--color-primary-dark);
+  color: var(--color-background);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -122,7 +122,7 @@
 }
 
 .btn-print:hover {
-  background: #138496;
+  background: var(--color-secondary);
 }
 
 .status-badge {
@@ -171,10 +171,10 @@
 .status-control-card,
 .items-card,
 .notes-card {
-  background: #fff;
+  background: var(--color-background);
   padding: 2rem;
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-gray-light);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -192,19 +192,19 @@
 }
 
 .info-card h3 i {
-  color: #3498db;
+  color: var(--color-primary);
 }
 
 .status-control-card h3 i {
-  color: #f39c12;
+  color: var(--color-primary-dark);
 }
 
 .items-card h3 i {
-  color: #27ae60;
+  color: var(--color-primary);
 }
 
 .notes-card h3 i {
-  color: #9b59b6;
+  color: var(--color-secondary);
 }
 
 .info-content {
@@ -264,8 +264,8 @@
 
 .status-select:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(243, 198, 35, 0.2);
 }
 
 /* Items Table */
@@ -330,7 +330,7 @@
 }
 
 .col-subtotal {
-  color: #27ae60;
+  color: var(--color-primary);
 }
 
 /* Order Total */
@@ -359,7 +359,7 @@
 }
 
 .total-amount {
-  color: #27ae60;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -394,7 +394,7 @@
 
 .order-not-found i {
   font-size: 4rem;
-  color: #e74c3c;
+  color: var(--color-secondary);
   margin-bottom: 1rem;
 }
 
@@ -410,8 +410,8 @@
 }
 
 .btn-back-to-orders {
-  background: #3498db;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   border: none;
   padding: 1rem 2rem;
   border-radius: 8px;
@@ -425,7 +425,7 @@
 }
 
 .btn-back-to-orders:hover {
-  background: #2980b9;
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 

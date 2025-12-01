@@ -24,13 +24,9 @@
                 </button>
             </div>
 
-            <!-- Message Alert -->
-            <div *ngIf="mensajeModal" class="alert" [ngClass]="tipoMensaje === 'success' ? 'alert-success' : 'alert-danger'">
-                {{ mensajeModal }}
-            </div>
 
             <!-- Form -->
-            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form" autocomplete="off">
                 <div class="form-section">
                     <h5 class="section-title">
                         <i class="fa-solid fa-id-card"></i> Datos Personales
@@ -213,6 +209,10 @@
                                 class="form-control"
                                 [class.is-invalid]="isFieldInvalid('usuario')"
                                 placeholder="Ingrese el nombre de usuario"
+                                autocomplete="off"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                spellcheck="false"
                             >
                             <div *ngIf="isFieldInvalid('usuario')" class="invalid-feedback">
                                 {{ getFieldError('usuario') }}
@@ -230,6 +230,10 @@
                                 class="form-control"
                                 [class.is-invalid]="isFieldInvalid('password')"
                                 placeholder="Solo si desea cambiarla"
+                                autocomplete="new-password"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                spellcheck="false"
                             >
                             <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
                                 {{ getFieldError('password') }}
@@ -284,7 +288,7 @@
                     <button 
                         type="submit" 
                         class="btn btn-primary"
-                        [disabled]="!userForm.valid || isSubmitting"
+                        [disabled]="isSubmitting || !currentUser"
                     >
                         <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmitting"></i>
                         <i class="fa-solid fa-save" *ngIf="!isSubmitting"></i>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService, ProductoBackend, ProductoCreateRequest, ProductoUpdateRequest, TerminadoCreateRequest } from '../../services/product.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-product-form',
@@ -29,7 +30,8 @@ export class ProductForm implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private productService: ProductService
+    private productService: ProductService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -68,7 +70,7 @@ export class ProductForm implements OnInit {
         },
         error: (error) => {
           console.error('Error loading producto:', error);
-          alert('Guía no encontrada');
+          this.alertService.showError('Guía no encontrada', 'Error');
           this.router.navigate(['/productos-admin']);
           this.isLoading = false;
         }
@@ -92,12 +94,12 @@ export class ProductForm implements OnInit {
         this.productService.updateProducto(this.productId, updateRequest).subscribe({
           next: (response) => {
             console.log('Update response:', response);
-            alert(response || 'Guía actualizada exitosamente');
+            this.alertService.showSuccess(response || 'Guía actualizada exitosamente', 'Éxito');
             this.router.navigate(['/productos-admin']);
           },
           error: (error) => {
             console.error('Error updating producto:', error);
-            alert('Error al actualizar la guía: ' + (error.error || error.message));
+            this.alertService.showError('Error al actualizar la guía: ' + (error.error || error.message), 'Error');
             this.isSaving = false;
           }
         });
@@ -115,12 +117,12 @@ export class ProductForm implements OnInit {
         this.productService.createProducto(createRequest).subscribe({
           next: (response) => {
             console.log('Create response:', response);
-            alert(response || 'Guía creada exitosamente');
+            this.alertService.showSuccess(response || 'Guía creada exitosamente', 'Éxito');
             this.router.navigate(['/productos-admin']);
           },
           error: (error) => {
             console.error('Error creating producto:', error);
-            alert('Error al crear la guía: ' + (error.error || error.message));
+            this.alertService.showError('Error al crear la guía: ' + (error.error || error.message), 'Error');
             this.isSaving = false;
           }
         });

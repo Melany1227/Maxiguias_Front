@@ -16,7 +16,7 @@
 
 /* Tarjeta principal */
 .register-card {
-  background: #fff;
+  background: var(--color-background);
   border-radius: 18px;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
   width: 100%;
@@ -68,7 +68,7 @@
 .btn {
   padding: 8px 16px;
   border-radius: 12px;
-  border: 1px solid #d9dee7;
+  border: 1px solid var(--color-gray-light);
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
@@ -77,14 +77,14 @@
   gap: 8px;
   transition: all 0.2s;
   font-size: 14px;
-  background: #eef4ff;
-  color: #667eea;
+  background: var(--color-gray-light);
+  color: var(--color-primary-dark);
 }
 
 .btn:hover {
-  background: #fff;
-  border-color: #c7d2fe;
-  color: #5a6fd8;
+  background: var(--color-background);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* Alerts */
@@ -171,9 +171,9 @@
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #c7d2fe;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(199, 210, 254, 0.45);
+  border-color: var(--color-primary);
+  background: var(--color-background);
+  box-shadow: 0 0 0 4px rgba(243, 198, 35, 0.3);
 }
 
 .form-control::placeholder {
@@ -263,8 +263,8 @@
 }
 
 .checkbox-input:checked + .checkbox-custom {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .checkbox-input:checked + .checkbox-custom::after {
@@ -285,13 +285,13 @@
 }
 
 .terms-link, .privacy-link {
-  color: #667eea;
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-weight: 600;
 }
 
 .terms-link:hover, .privacy-link:hover {
-  color: #5a6fd8;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -315,20 +315,20 @@
 }
 
 .btn-secondary {
-  background: #6b7280;
-  color: white;
-  border: 1px solid #6b7280;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
+  border: 1px solid var(--color-gray-medium);
 }
 
 .btn-secondary:hover {
-  background: #4b5563;
-  border-color: #4b5563;
+  background: var(--color-gray-dark);
+  border-color: var(--color-gray-dark);
 }
 
 /* Botón principal estilo login (negro con barra dorada) */
 .btn-primary {
-  background-color: #000;
-  color: #fff;
+  background-color: var(--color-secondary);
+  color: var(--color-background);
   border: none;
   cursor: pointer;
 }
@@ -338,12 +338,12 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: 6px;
-  background-color: #f3c623;
+  background-color: var(--color-primary);
   border-radius: 12px 0 0 12px;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #333;
+  background-color: var(--color-gray-dark);
 }
 
 .btn-primary:disabled {
@@ -372,14 +372,14 @@
 }
 
 .login-link {
-  color: #667eea;
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
 }
 
 .login-link:hover {
-  color: #5a6fd8;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 

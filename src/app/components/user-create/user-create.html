@@ -9,12 +9,8 @@
             </button>
         </div>
 
-        <!-- Message Alert -->
-        <div *ngIf="mensajeModal" class="alert" [ngClass]="tipoMensaje === 'success' ? 'alert-success' : 'alert-danger'">
-            {{ mensajeModal }}
-        </div>
 
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form" autocomplete="off">
             <div class="form-section">
                 <h5 class="section-title">
                     🆔 Datos Personales
@@ -187,7 +183,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fa-solid fa-user-circle"></i> Nombre de Usuario *
+                            <i class="fa-solid fa-user-circle"></i> Nombre de Usuario
                         </label>
                         <input 
                             type="text" 
@@ -195,6 +191,10 @@
                             class="form-control"
                             [class.is-invalid]="isFieldInvalid('usuario')"
                             placeholder="Ingrese el nombre de usuario"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div *ngIf="isFieldInvalid('usuario')" class="invalid-feedback">
                             {{ getFieldError('usuario') }}
@@ -203,7 +203,7 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fa-solid fa-lock"></i> Contraseña *
+                            <i class="fa-solid fa-lock"></i> Contraseña
                         </label>
                         <input 
                             type="password" 
@@ -211,6 +211,10 @@
                             class="form-control"
                             [class.is-invalid]="isFieldInvalid('password')"
                             placeholder="Mínimo 6 caracteres"
+                            autocomplete="new-password"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div *ngIf="isFieldInvalid('password')" class="invalid-feedback">
                             {{ getFieldError('password') }}
@@ -256,6 +260,8 @@
                     </div>
                 </div>
             </div>
+
+            <br>
 
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" (click)="cancelar()">

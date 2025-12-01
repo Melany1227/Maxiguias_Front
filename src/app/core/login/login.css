@@ -15,7 +15,7 @@
 
 /* Tarjeta */
 .login-card {
-  background: #fff;
+  background: var(--color-background);
   border-radius: 18px;
   box-shadow: 0 20px 45px rgba(0,0,0,0.12);
   padding: 2.5rem;
@@ -50,11 +50,27 @@
   outline: none;
 }
 .form-group input:focus {
-  border-color: #c7d2fe;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(199,210,254,.45);
+  border-color: var(--color-primary);
+  background: var(--color-background);
+  box-shadow: 0 0 0 4px rgba(243, 198, 35, 0.3);
 }
 .form-group input::placeholder { color: #a8a8a8; }
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Mensaje de error */
+.error-message {
+  background-color: #fee;
+  color: #c53030;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
 
 /* Opciones bajo los campos */
 .form-options {
@@ -64,15 +80,15 @@
 .checkbox-container { display: flex; align-items: center; gap: .5rem; cursor: pointer; user-select: none; }
 .checkbox-container input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
 
-.forgot-password { color: #667eea; text-decoration: none; font-weight: 500; transition: color .3s ease; }
-.forgot-password:hover { color: #5a6fd8; text-decoration: underline; }
+.forgot-password { color: var(--color-primary-dark); text-decoration: none; font-weight: 500; transition: color .3s ease; }
+.forgot-password:hover { color: var(--color-primary); text-decoration: underline; }
 
 /* Botón principal (negro con barra dorada a la izquierda) */
 .login-btn {
   width: 100%;
   padding: 14px 18px;
-  background-color: #000;
-  color: #fff;
+  background-color: var(--color-secondary);
+  color: var(--color-background);
   border: none;
   border-radius: 12px;
   font-weight: 700;
@@ -85,16 +101,24 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: 6px;
-  background-color: #f3c623;
+  background-color: var(--color-primary);
   border-radius: 12px 0 0 12px;
 }
-.login-btn:hover { background-color: #333; }
+.login-btn:hover { background-color: var(--color-gray-dark); }
+.login-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.login-btn:disabled::before {
+  background-color: #999;
+}
 
 /* Registro */
 .signup-link { text-align: center; margin-top: 1.25rem; }
 .signup-link p { color: #666; font-size: .9rem; }
-.signup-btn { color: #667eea; text-decoration: none; font-weight: 600; transition: color .3s ease; }
-.signup-btn:hover { color: #5a6fd8; text-decoration: underline; }
+.signup-btn { color: var(--color-primary-dark); text-decoration: none; font-weight: 600; transition: color .3s ease; }
+.signup-btn:hover { color: var(--color-primary); text-decoration: underline; }
 
 /* Responsive */
 @media (max-width: 900px) {

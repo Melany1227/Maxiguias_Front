@@ -12,13 +12,9 @@
             </div>
         </div>
 
-        <!-- Message Alert -->
-        <div *ngIf="mensajeModal" class="alert" [ngClass]="tipoMensaje === 'success' ? 'alert-success' : 'alert-danger'">
-            {{ mensajeModal }}
-        </div>
 
         <!-- Registration Form -->
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form" autocomplete="off">
             
             <!-- Personal Information Section -->
             <div class="form-section">
@@ -195,7 +191,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">
-                            👤 Nombre de Usuario *
+                            👤 Nombre de Usuario
                         </label>
                         <input 
                             type="text" 
@@ -203,6 +199,10 @@
                             class="form-control"
                             [class.is-invalid]="isFieldInvalid('usuario')"
                             placeholder="Nombre de usuario único"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div *ngIf="isFieldInvalid('usuario')" class="invalid-feedback">
                             {{ getFieldError('usuario') }}
@@ -213,7 +213,7 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            🔒 Contraseña *
+                            🔒 Contraseña
                         </label>
                         <input 
                             type="password" 
@@ -221,6 +221,10 @@
                             class="form-control"
                             [class.is-invalid]="isFieldInvalid('password')"
                             placeholder="Mínimo 6 caracteres"
+                            autocomplete="new-password"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div *ngIf="registerForm.get('password')?.value && !isFieldInvalid('password')" 
                              class="password-strength" 
@@ -234,7 +238,7 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            🔒 Confirmar Contraseña *
+                            🔒 Confirmar Contraseña
                         </label>
                         <input 
                             type="password" 
@@ -242,6 +246,10 @@
                             class="form-control"
                             [class.is-invalid]="isFieldInvalid('confirmPassword')"
                             placeholder="Repite la contraseña"
+                            autocomplete="new-password"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div *ngIf="isFieldInvalid('confirmPassword')" class="invalid-feedback">
                             {{ getFieldError('confirmPassword') }}

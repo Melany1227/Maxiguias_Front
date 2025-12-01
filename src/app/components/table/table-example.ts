@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Table, TableColumn, TableAction } from './table';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-table-example',
@@ -34,6 +35,8 @@ import { Table, TableColumn, TableAction } from './table';
   `]
 })
 export class TableExample {
+  
+  constructor(private alertService: AlertService) {}
   loading = false;
 
   // Datos de ejemplo para personas
@@ -149,11 +152,19 @@ export class TableExample {
     // Abrir modal de edición, navegar a formulario, etc.
   }
 
-  eliminarPersona(persona: any) {
+  async eliminarPersona(persona: any) {
     console.log('Eliminar persona:', persona);
     // Mostrar confirmación, llamar servicio de eliminación, etc.
-    if (confirm(`¿Estás seguro de eliminar a ${persona.nombre}?`)) {
+    const confirmed = await this.alertService.confirm({
+      title: 'Confirmar eliminación',
+      message: `¿Estás seguro de eliminar a ${persona.nombre}?`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (confirmed) {
       this.personas = this.personas.filter(p => p.id !== persona.id);
+      this.alertService.showSuccess('Persona eliminada exitosamente', 'Éxito');
     }
   }
 

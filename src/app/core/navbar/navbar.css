@@ -2,14 +2,14 @@
 :root {
     --sidebar-w: 220px;          /* ancho expandido por defecto */
     --sidebar-w-collapsed: 56px; /* ancho colapsado */
-    --accent: #f3c623;           /* color amarillo para la línea izquierda */
+    --accent: var(--color-primary);           /* color amarillo para la línea izquierda */
   }
   
   
   .sidebar{
     height: 100vh;
     width: var(--sidebar-w);
-    background-color: #2d2e2b;
+    background-color: var(--color-gray-dark);
     padding: 16px 12px;
     position: fixed;
     top: 0; left: 0;
@@ -29,21 +29,21 @@
     width: 36px; height: 36px;
     display: grid; place-items: center;
     border: 0; border-radius: 8px;
-    background: #000; color: #fff;
+    background: var(--color-secondary); color: var(--color-background);
     cursor: pointer; margin-bottom: 8px;
   }
-  .collapse-toggle:hover{ background:#333; }
+  .collapse-toggle:hover{ background: var(--color-gray-dark); }
   .collapse-toggle .bars, .collapse-toggle .chev{ font-size: 16px; line-height: 1; }
   
   /* Botones */
   .btn{
     width: 100%;
     margin-bottom: 12px;
-    background-color: #000;
+    background-color: var(--color-secondary);
     border: none;
     border-radius: 6px;
     padding: 16px 18px;
-    color: white;
+    color: var(--color-background);
     font-weight: bold;
     font-size: 16px;
     cursor: pointer;
@@ -57,10 +57,10 @@
     position: absolute;
     top: 0; left: 0;
     height: 100%; width: 6px;
-    background-color: #f3c623;
+    background-color: var(--color-primary);
     border-radius: 6px 0 0 6px;
   }
-  .btn:hover{ background-color: #333; }
+  .btn:hover{ background-color: var(--color-gray-dark); }
   .label{ white-space: nowrap; }
 
   .cart-btn {
@@ -71,8 +71,8 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: #e74c3c;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-secondary);
     border-radius: 50%;
     width: 20px;
     height: 20px;

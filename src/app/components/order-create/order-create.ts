@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService, CartItem } from '../../services/cart.service';
 import { OrdersService, Usuario, CrearOrdenRequest } from '../../services/orders.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 
 @Component({
@@ -28,7 +29,8 @@ export class OrderCreate implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private ordersService: OrdersService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -121,7 +123,7 @@ export class OrderCreate implements OnInit, OnDestroy {
       // Validar que todos los items tengan terminadoId
       const invalidItems = this.cartItems.filter(item => !item.terminadoId);
       if (invalidItems.length > 0) {
-        alert('Error: Algunos productos no tienen información completa. Por favor, vuelve a agregarlos al carrito.');
+        this.alertService.showError('Algunos productos no tienen información completa. Por favor, vuelve a agregarlos al carrito.', 'Error');
         this.isSubmitting = false;
         return;
       }
@@ -153,13 +155,13 @@ export class OrderCreate implements OnInit, OnDestroy {
 
       this.ordersService.crearOrden(request).subscribe({
         next: (response) => {
-          alert(response);
+          this.alertService.showSuccess(response, 'Éxito');
           this.cartService.clearCart();
           this.router.navigate(['/orders']);
         },
         error: (error) => {
           console.error('Error al crear la orden:', error);
-          alert('Error al crear el pedido. Por favor intenta nuevamente.');
+          this.alertService.showError('Error al crear el pedido. Por favor intenta nuevamente.', 'Error');
           this.isSubmitting = false;
         }
       });

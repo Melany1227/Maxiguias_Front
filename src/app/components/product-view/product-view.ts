@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService, ProductoBackend } from '../../services/product.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-product-view',
@@ -17,7 +18,8 @@ export class ProductView implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private productService: ProductService
+    private productService: ProductService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -37,7 +39,7 @@ export class ProductView implements OnInit {
         },
         error: (error) => {
           console.error('Error loading producto:', error);
-          alert('Guía no encontrada');
+          this.alertService.showError('Guía no encontrada', 'Error');
           this.router.navigate(['/productos-admin']);
           this.isLoading = false;
         }
@@ -55,18 +57,27 @@ export class ProductView implements OnInit {
     }
   }
 
-  deleteProduct() {
-    if (this.producto && confirm(`¿Estás seguro de que quieres eliminar "${this.producto.nombre}"?`)) {
-      this.productService.deleteProducto(this.producto.id).subscribe({
-        next: (response) => {
-          alert(response || 'Producto eliminado exitosamente');
-          this.router.navigate(['/productos-admin']);
-        },
-        error: (error) => {
-          console.error('Error deleting product:', error);
-          alert('Error al eliminar el producto: ' + error.message);
-        }
+  async deleteProduct() {
+    if (this.producto) {
+      const confirmed = await this.alertService.confirm({
+        title: 'Confirmar eliminación',
+        message: `¿Estás seguro de que quieres eliminar "${this.producto.nombre}"?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
       });
+
+      if (confirmed) {
+        this.productService.deleteProducto(this.producto.id).subscribe({
+          next: (response) => {
+            this.alertService.showSuccess(response || 'Producto eliminado exitosamente', 'Éxito');
+            this.router.navigate(['/productos-admin']);
+          },
+          error: (error) => {
+            console.error('Error deleting product:', error);
+            this.alertService.showError('Error al eliminar el producto: ' + error.message, 'Error');
+          }
+        });
+      }
     }
   }
 

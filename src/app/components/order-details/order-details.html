@@ -28,7 +28,7 @@
       
       <div class="header-actions">
         <button class="btn-print" (click)="printOrder()">
-          🖨️ Imprimir
+          📄 Generar PDF
         </button>
         <div class="status-badge" [ngClass]="getStatusClass(order.estado)">
           {{getStatusLabel(order.estado)}}

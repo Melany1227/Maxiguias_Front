@@ -41,7 +41,7 @@
 .cart-total {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #27ae60;
+  color: var(--color-primary);
 }
 
 /* Button Styles */
@@ -59,34 +59,34 @@
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
 }
 
 .btn-primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 .btn-secondary {
-  background: #6b7280;
-  color: white;
-  border-color: #6b7280;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
+  border-color: var(--color-gray-medium);
 }
 
 .btn-secondary:hover {
-  background: #4b5563;
+  background: var(--color-gray-dark);
 }
 
 .btn-info {
-  background: #06b6d4;
-  color: white;
-  border-color: #06b6d4;
+  background: var(--color-primary-light);
+  color: var(--color-secondary);
+  border-color: var(--color-primary-light);
 }
 
 .btn-info:hover {
-  background: #0891b2;
+  background: var(--color-primary);
 }
 
 .icon {
@@ -128,7 +128,7 @@
 
 .empty-cart i {
   font-size: 4rem;
-  color: #bdc3c7;
+  color: var(--color-gray-medium);
   margin-bottom: 1rem;
 }
 
@@ -152,8 +152,8 @@
   display: flex;
   gap: 1rem;
   padding: 1.5rem;
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: var(--color-background);
+  border: 1px solid var(--color-gray-light);
   border-radius: 12px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -217,7 +217,7 @@
 }
 
 .price-type {
-  color: #3498db;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -233,7 +233,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f8f9fa;
+  background: var(--color-gray-light);
   border-radius: 6px;
   padding: 0.25rem;
 }
@@ -242,8 +242,8 @@
   width: 32px;
   height: 32px;
   border: none;
-  background: #3498db;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -253,7 +253,7 @@
 }
 
 .qty-btn:hover {
-  background: #2980b9;
+  background: var(--color-primary-dark);
 }
 
 .quantity {
@@ -276,12 +276,12 @@
 .subtotal {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #27ae60;
+  color: var(--color-primary);
 }
 
 .remove-btn {
-  background: #e74c3c;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-background);
   border: none;
   width: 36px;
   height: 36px;
@@ -294,12 +294,12 @@
 }
 
 .remove-btn:hover {
-  background: #c0392b;
+  background: var(--color-gray-dark);
 }
 
 /* Cart Footer */
 .cart-footer {
-  border-top: 2px solid #e9ecef;
+  border-top: 2px solid var(--color-gray-light);
   padding-top: 2rem;
 }
 
@@ -323,21 +323,21 @@
 }
 
 .btn-clear-cart {
-  background: #e74c3c;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-background);
 }
 
 .btn-clear-cart:hover {
-  background: #c0392b;
+  background: var(--color-gray-dark);
 }
 
 .btn-continue-shopping {
-  background: #95a5a6;
-  color: white;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
 }
 
 .btn-continue-shopping:hover {
-  background: #7f8c8d;
+  background: var(--color-gray-dark);
 }
 
 .checkout-section {
@@ -359,7 +359,7 @@
 }
 
 .final-total {
-  border-top: 2px solid #e9ecef;
+  border-top: 2px solid var(--color-gray-light);
   font-size: 1.25rem;
   font-weight: 700;
   margin-top: 0.5rem;
@@ -371,7 +371,7 @@
 }
 
 .total-amount {
-  color: #27ae60;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -380,8 +380,8 @@
 }
 
 .btn-checkout {
-  background: #27ae60;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   border: none;
   padding: 1rem 2rem;
   border-radius: 8px;
@@ -396,9 +396,9 @@
 }
 
 .btn-checkout:hover {
-  background: #219a52;
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+  box-shadow: 0 4px 8px rgba(243, 198, 35, 0.3);
 }
 
 /* Responsive */

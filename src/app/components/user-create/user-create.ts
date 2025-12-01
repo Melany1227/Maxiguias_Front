@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserService, User, TipoUsuario, Perfil, Departamento, Ciudad } from '../../services/user.service';
 import { LocationService } from '../../services/location.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -20,8 +21,6 @@ export class UserCreate implements OnInit, OnDestroy {
   departamentos: Departamento[] = [];
   ciudades: Ciudad[] = [];
   ciudadesFiltradas: Ciudad[] = [];
-  mensajeModal: string = '';
-  tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
   
   private subscription: Subscription = new Subscription();
@@ -30,7 +29,8 @@ export class UserCreate implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private userService: UserService,
     private locationService: LocationService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -56,8 +56,8 @@ export class UserCreate implements OnInit, OnDestroy {
       direccion: ['', Validators.required],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9\-\+\s\(\)]{10,}$/)]],
       correo: ['', [Validators.required, Validators.email]],
-      usuario: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      usuario: ['', [Validators.minLength(3)]],
+      password: ['', [Validators.minLength(6)]],
       tipoUsuario: ['', Validators.required],
       perfil: ['', Validators.required],
       departamento: ['', Validators.required],
@@ -213,11 +213,9 @@ export class UserCreate implements OnInit, OnDestroy {
             console.log('Response from backend:', response);
             // Verificar si la respuesta indica un error
             if (this.userService.isErrorResponse(response)) {
-              this.mensajeModal = response;
-              this.tipoMensaje = 'error';
+              this.alertService.showError(response, 'Error');
             } else {
-              this.mensajeModal = response || 'Usuario creado exitosamente';
-              this.tipoMensaje = 'success';
+              this.alertService.showSuccess(response || 'Usuario creado exitosamente', 'Éxito');
               
               setTimeout(() => {
                 this.router.navigate(['/usuarios-admin']);
@@ -225,15 +223,13 @@ export class UserCreate implements OnInit, OnDestroy {
             }
           },
           error: (error) => {
-            this.mensajeModal = this.userService.extractErrorMessage(error);
-            this.tipoMensaje = 'error';
+            this.alertService.showError(this.userService.extractErrorMessage(error), 'Error');
             console.error('Error completo:', error);
           }
         });
 
       } catch (error: any) {
-        this.mensajeModal = error.message || 'Error al crear el usuario';
-        this.tipoMensaje = 'error';
+        this.alertService.showError(error.message || 'Error al crear el usuario', 'Error');
       } finally {
         this.isSubmitting = false;
       }
@@ -241,8 +237,7 @@ export class UserCreate implements OnInit, OnDestroy {
       console.log('Form no válido');
       this.logFormErrors();
       this.markFormGroupTouched();
-      this.mensajeModal = 'Por favor, complete todos los campos requeridos correctamente';
-      this.tipoMensaje = 'error';
+      this.alertService.showError('Por favor, complete todos los campos requeridos correctamente', 'Error de validación');
     }
   }
 

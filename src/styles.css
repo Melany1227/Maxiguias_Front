@@ -2,10 +2,37 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+/* =========================== */
+/* PALETA DE COLORES COHERENTE */
+/* =========================== */
+:root {
+  /* Colores principales */
+  --color-primary: #f3c623;      /* Amarillo principal */
+  --color-secondary: #000;       /* Negro */
+  --color-background: #fff;      /* Blanco */
+  
+  /* Variaciones del amarillo */
+  --color-primary-light: #f5d84a;
+  --color-primary-dark: #d4a017;
+  
+  /* Grises neutros (solo cuando sea absolutamente necesario) */
+  --color-gray-light: #f8f9fa;
+  --color-gray-medium: #6c757d;
+  --color-gray-dark: #2d2e2b;
+  
+  /* Estados (usando variaciones del amarillo y negro) */
+  --color-success: var(--color-primary);
+  --color-warning: var(--color-primary-dark);
+  --color-danger: var(--color-secondary);
+  --color-info: var(--color-primary-light);
+}
+
 * {
   font-family: 'Poppins', sans-serif;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
+  color: var(--color-secondary);
+  background-color: var(--color-background);
 }

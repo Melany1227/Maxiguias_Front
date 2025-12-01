@@ -52,11 +52,13 @@ export class CatalogService {
   stats$ = this.stats.asObservable();
 
   constructor(private http: HttpClient) {
+    console.log('CatalogService initialized, loading catalog...');
     this.loadCatalog();
   }
 
   // Load all products from catalog
   loadCatalog(): void {
+    console.log('Making request to:', `${this.baseUrl}/catalogo`);
     this.http.get<CatalogoResponse>(`${this.baseUrl}/catalogo`).subscribe({
       next: (response) => {
         console.log('Catalog loaded from API:', response);
@@ -65,6 +67,7 @@ export class CatalogService {
       },
       error: (error) => {
         console.error('Error loading catalog from API:', error);
+        console.error('Error details:', error);
         this.loadFallbackData();
       }
     });

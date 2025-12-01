@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Login } from './core/login/login';
+import { AdminGuard } from './guards/admin.guard';
 
 
 export const routes: Routes = [
@@ -22,19 +23,23 @@ export const routes: Routes = [
   },
   {
     path: 'usuarios-admin',
-    loadChildren: () => import('./components/users-admin/users-admin.routes').then(m => m.usersAdminRoutes)
+    loadChildren: () => import('./components/users-admin/users-admin.routes').then(m => m.usersAdminRoutes),
+    canActivate: [AdminGuard]
   },
   {
     path: 'usuarios-admin/crear',
-    loadChildren: () => import('./components/user-create/user-create.routes').then(m => m.userCreateRoutes)
+    loadChildren: () => import('./components/user-create/user-create.routes').then(m => m.userCreateRoutes),
+    canActivate: [AdminGuard]
   },
   {
     path: 'usuarios-admin/editar/:id',
-    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes)
+    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes),
+    canActivate: [AdminGuard]
   },
   {
     path: 'usuarios-admin/ver/:id',
-    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes)
+    loadChildren: () => import('./components/user-edit/user-edit.routes').then(m => m.userEditRoutes),
+    canActivate: [AdminGuard]
   },
   {
     path: 'catalog',

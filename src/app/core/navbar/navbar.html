@@ -8,25 +8,59 @@
 
   <img class="logo" src="assets/logo.png" alt="MaxiGestión" />
 
-  <button class="btn" routerLink="/login" title="Ingresar">
+  <!-- HOME - Visible para todos -->
+  <button class="btn" routerLink="/" title="Inicio">
+    <span class="label">INICIO</span>
+  </button>
+
+  <!-- CATÁLOGO - Visible para todos -->
+  <button class="btn" routerLink="/catalog" title="Catálogo">
+    <span class="label">CATÁLOGO</span>
+  </button>
+
+  <!-- INGRESAR - Solo visible si no está logueado -->
+  <button class="btn" routerLink="/login" title="Ingresar" *ngIf="!isLoggedIn">
     <span class="label">INGRESAR</span>
   </button>
 
-  <button class="btn" routerLink="/register" title="Registrarse">
+  <!-- REGISTRARSE - Solo visible si no está logueado -->
+  <button class="btn" routerLink="/register" title="Registrarse" *ngIf="!isLoggedIn">
     <span class="label">REGISTRARSE</span>
   </button>
 
-  <button class="btn" routerLink="/usuarios-admin" title="Administrar Usuarios">
-    <span class="label">USUARIOS</span>
-  </button>
-
-  <button class="btn" routerLink="/catalog" title="Catálogo"><span class="label">CATÁLOGO</span></button>
-  <button class="btn" routerLink="/products" title="Administrar Productos"><span class="label">PRODUCTOS</span></button>
-  <button class="btn cart-btn" routerLink="/cart" title="Carrito">
+  <!-- CARRITO - Visible para JURIDICO y ADMIN -->
+  <button class="btn cart-btn" routerLink="/cart" title="Carrito" *ngIf="canSeeCart()">
     <span class="label">CARRITO</span>
     <span class="cart-badge" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
   </button>
-  <button class="btn" routerLink="/orders" title="Pedidos"><span class="label">PEDIDOS</span></button>
-  <button class="btn" title="Acerca de"><span class="label">ACERCA DE</span></button>
-  <button class="btn" title="Contacto"><span class="label">CONTACTO</span></button>
+
+  <!-- USUARIOS - Solo para ADMIN -->
+  <button class="btn" routerLink="/usuarios-admin" title="Administrar Usuarios" *ngIf="canSeeUserAdmin()">
+    <span class="label">USUARIOS</span>
+  </button>
+
+  <!-- PRODUCTOS - Solo para ADMIN -->
+  <button class="btn" routerLink="/products" title="Administrar Productos" *ngIf="canSeeProducts()">
+    <span class="label">PRODUCTOS</span>
+  </button>
+
+  <!-- PEDIDOS - Solo para ADMIN -->
+  <button class="btn" routerLink="/orders" title="Pedidos" *ngIf="canSeeOrders()">
+    <span class="label">PEDIDOS</span>
+  </button>
+
+  <!-- ACERCA DE - Visible para todos -->
+  <button class="btn" title="Acerca de">
+    <span class="label">ACERCA DE</span>
+  </button>
+
+  <!-- CONTACTO - Visible para todos -->
+  <button class="btn" title="Contacto">
+    <span class="label">CONTACTO</span>
+  </button>
+
+  <!-- CERRAR SESIÓN - Solo visible si está logueado -->
+  <button class="btn" (click)="logout()" title="Cerrar Sesión" *ngIf="isLoggedIn">
+    <span class="label">CERRAR SESIÓN</span>
+  </button>
 </nav>

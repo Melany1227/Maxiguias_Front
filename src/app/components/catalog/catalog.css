@@ -22,7 +22,7 @@
 }
 
 .catalog-header h2 i {
-  color: #3498db;
+  color: var(--color-primary);
   margin-right: 0.5rem;
 }
 
@@ -35,12 +35,12 @@
 }
 
 .stat-card {
-  background: white;
+  background: var(--color-background);
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid var(--color-primary);
 }
 
 .stat-number {
@@ -75,9 +75,9 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #3498db;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: var(--color-primary);
+  background: var(--color-background);
+  box-shadow: 0 0 0 3px rgba(243, 198, 35, 0.2);
 }
 
 .search-icon {
@@ -109,7 +109,7 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--color-primary);
 }
 
 .btn {
@@ -125,12 +125,12 @@
 }
 
 .btn-secondary {
-  background: #6c757d;
-  color: white;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #5a6268;
+  background: var(--color-gray-dark);
 }
 
 .btn:disabled {
@@ -148,12 +148,12 @@
 
 /* Card de producto */
 .product-card {
-  background: #fff;
+  background: var(--color-background);
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #f1f3f4;
+  border: 1px solid var(--color-gray-light);
 }
 
 .product-card:hover {
@@ -185,8 +185,8 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: #27ae60;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -194,13 +194,14 @@
 }
 
 .product-badge.sale {
-  background: #e74c3c;
+  background: var(--color-secondary);
+  color: var(--color-background);
 }
 
 /* Badges */
 .product-badge.trabajo-encargo {
-  background: #17a2b8;
-  color: white;
+  background: var(--color-primary-dark);
+  color: var(--color-background);
 }
 
 /* Informaci�n del producto */
@@ -237,7 +238,7 @@
 }
 
 .product-category i {
-  color: #3498db;
+  color: var(--color-primary);
 }
 
 .product-id,
@@ -252,26 +253,26 @@
 
 .product-id i,
 .product-type i {
-  color: #3498db;
+  color: var(--color-primary);
 }
 
 .product-type {
-  color: #17a2b8;
+  color: var(--color-primary-dark);
   font-weight: 600;
 }
 
 .product-price {
-  background: #f8f9fa;
+  background: var(--color-gray-light);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #27ae60;
+  border-left: 4px solid var(--color-primary);
 }
 
 .current-price {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #27ae60;
+  color: var(--color-primary-dark);
   margin-left: 0.5rem;
 }
 
@@ -298,8 +299,8 @@
 }
 
 .terminado-medida {
-  background: #3498db;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
@@ -331,19 +332,19 @@
 
 .precio-publico {
   font-weight: 700;
-  color: #28a745;
+  color: var(--color-primary);
   font-size: 1.1rem;
 }
 
 .precio-mayor {
   font-weight: 700;
-  color: #fd7e14;
+  color: var(--color-primary-dark);
   font-size: 1rem;
 }
 
 .precio-encargo {
   font-weight: 700;
-  color: #6f42c1;
+  color: var(--color-secondary);
   font-size: 1rem;
 }
 
@@ -352,8 +353,8 @@
 }
 
 .btn-add-cart-terminado {
-  background: #28a745;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -367,7 +368,7 @@
 }
 
 .btn-add-cart-terminado:hover:not(:disabled) {
-  background: #218838;
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
@@ -413,19 +414,19 @@
 .wholesale-price {
   font-size: 1rem;
   font-weight: 600;
-  color: #f39c12;
+  color: var(--color-primary-dark);
 }
 
 .custom-price {
   font-size: 1rem;
   font-weight: 600;
-  color: #9b59b6;
+  color: var(--color-secondary);
 }
 
 .retail-price {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #27ae60;
+  color: var(--color-primary);
 }
 
 .original-price {
@@ -465,8 +466,8 @@
 
 .price-type-select:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(243, 198, 35, 0.2);
 }
 
 /* Botones de acci�n */
@@ -491,29 +492,30 @@
 }
 
 .btn-add-cart {
-  background: #3498db;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-secondary);
 }
 
 .btn-add-cart:hover:not(:disabled) {
-  background: #2980b9;
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
 .btn-add-cart.disabled,
 .btn-add-cart:disabled {
-  background: #bdc3c7;
+  background: var(--color-gray-medium);
   cursor: not-allowed;
   transform: none;
 }
 
 .btn-view-details {
-  background: #ecf0f1;
-  color: #2c3e50;
+  background: var(--color-gray-light);
+  color: var(--color-secondary);
 }
 
 .btn-view-details:hover {
-  background: #d5dbdb;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
   transform: translateY(-1px);
 }
 
@@ -526,7 +528,7 @@
 
 .no-products i {
   font-size: 4rem;
-  color: #bdc3c7;
+  color: var(--color-gray-medium);
   margin-bottom: 1rem;
 }
 
@@ -550,7 +552,7 @@
 
 .loading-state i {
   font-size: 3rem;
-  color: #3498db;
+  color: var(--color-primary);
   margin-bottom: 1rem;
 }
 

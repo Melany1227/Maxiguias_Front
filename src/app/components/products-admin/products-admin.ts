@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService, ProductoBackend } from '../../services/product.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,7 +24,8 @@ export class ProductsAdmin implements OnInit, OnDestroy {
 
   constructor(
     private productService: ProductService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -90,17 +92,24 @@ export class ProductsAdmin implements OnInit, OnDestroy {
     this.router.navigate(['/productos-admin/ver', id]);
   }
 
-  deleteProduct(producto: ProductoBackend) {
-    if (confirm(`¿Estás seguro de que quieres eliminar "${producto.nombre}"?`)) {
+  async deleteProduct(producto: ProductoBackend) {
+    const confirmed = await this.alertService.confirm({
+      title: 'Confirmar eliminación',
+      message: `¿Estás seguro de que quieres eliminar "${producto.nombre}"?`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (confirmed) {
       this.productService.deleteProducto(producto.id).subscribe({
         next: (response) => {
           console.log('Response from backend:', response);
-          alert(response || 'Producto eliminado exitosamente');
+          this.alertService.showSuccess(response || 'Producto eliminado exitosamente', 'Éxito');
           this.loadProductos(); // Reload the list
         },
         error: (error) => {
           console.error('Error deleting product:', error);
-          alert('Error al eliminar el producto: ' + error.message);
+          this.alertService.showError('Error al eliminar el producto: ' + error.message, 'Error');
         }
       });
     }

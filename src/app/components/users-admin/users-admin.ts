@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService, User, TipoUsuario, Perfil } from '../../services/user.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -30,7 +31,8 @@ export class UsersAdmin implements OnInit, OnDestroy {
 
   constructor(
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -141,21 +143,28 @@ export class UsersAdmin implements OnInit, OnDestroy {
     this.router.navigate(['/usuarios-admin/ver', documento]);
   }
 
-  deleteUser(user: User) {
-    if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${user.nombre} ${user.primerApellido}"?`)) {
+  async deleteUser(user: User) {
+    const confirmed = await this.alertService.confirm({
+      title: 'Confirmar eliminación',
+      message: `¿Estás seguro de que quieres eliminar al usuario "${user.nombre} ${user.primerApellido}"?`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (confirmed) {
       this.userService.deleteUser(user.documento).subscribe({
         next: (response) => {
           console.log('Response from backend:', response);
           // Verificar si la respuesta indica un error
           if (this.userService.isErrorResponse(response)) {
-            alert(response);
+            this.alertService.showError(response, 'Error');
           } else {
-            alert(response || 'Usuario eliminado exitosamente');
+            this.alertService.showSuccess(response || 'Usuario eliminado exitosamente', 'Éxito');
             this.loadUsers(); // Recargar la lista solo si fue exitoso
           }
         },
         error: (error) => {
-          alert(this.userService.extractErrorMessage(error));
+          this.alertService.showError(this.userService.extractErrorMessage(error), 'Error');
           console.error('Error completo:', error);
         }
       });

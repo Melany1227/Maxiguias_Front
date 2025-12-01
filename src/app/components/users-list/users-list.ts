@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Table, TableColumn, TableAction } from '../table/table';
 import { UserService, User } from '../../services/user.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -49,7 +50,7 @@ export class UsersList implements OnInit, OnDestroy {
 
   loading = false;
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private alertService: AlertService) {}
 
   ngOnInit() {
     this.subscription.add(
@@ -81,14 +82,21 @@ export class UsersList implements OnInit, OnDestroy {
     console.log('Editar usuario:', user);
   }
 
-  eliminarUsuario(user: User) {
-    if (confirm(`¿Estás seguro de eliminar al usuario ${user.nombre} ${user.primerApellido}?`)) {
+  async eliminarUsuario(user: User) {
+    const confirmed = await this.alertService.confirm({
+      title: 'Confirmar eliminación',
+      message: `¿Estás seguro de eliminar al usuario ${user.nombre} ${user.primerApellido}?`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (confirmed) {
       this.userService.deleteUser(user.documento).subscribe({
         next: (response) => {
-          alert('Usuario eliminado exitosamente');
+          this.alertService.showSuccess('Usuario eliminado exitosamente', 'Éxito');
         },
         error: (error) => {
-          alert('Error al eliminar el usuario');
+          this.alertService.showError('Error al eliminar el usuario', 'Error');
           console.error('Error:', error);
         }
       });

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService, Product } from '../../services/cart.service';
 import { CatalogService, ProductoCatalogoDTO, CatalogStats } from '../../services/catalog.service';
+import { AuthService } from '../../services/auth.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 
@@ -29,13 +31,17 @@ export class Catalog implements OnInit, OnDestroy {
 
   constructor(
     private cartService: CartService,
-    public catalogService: CatalogService
+    public catalogService: CatalogService,
+    public authService: AuthService,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
+    console.log('Catalog component initialized');
     // Subscribe to products from catalog service
     this.subscription.add(
       this.catalogService.productos$.subscribe(productos => {
+        console.log('Catalog component received products:', productos);
         this.productos = productos;
         this.sortProducts();
       })
@@ -44,6 +50,7 @@ export class Catalog implements OnInit, OnDestroy {
     // Subscribe to catalog stats
     this.subscription.add(
       this.catalogService.stats$.subscribe(stats => {
+        console.log('Catalog component received stats:', stats);
         this.catalogStats = stats;
       })
     );
@@ -91,7 +98,7 @@ export class Catalog implements OnInit, OnDestroy {
     const selectedTerminado = terminado || (producto.terminados.length > 0 ? producto.terminados[0] : null);
     
     if (!selectedTerminado) {
-      alert('❌ Producto sin información de precios');
+      this.alertService.showError('Producto sin información de precios', 'Error');
       return;
     }
     
@@ -113,10 +120,10 @@ export class Catalog implements OnInit, OnDestroy {
       
       this.cartService.addToCart(cartProduct, 1, 'retail', selectedTerminado.id);
       console.log(`✅ Producto ${producto.nombre} agregado al carrito`);
-      alert(`✅ ${producto.nombre} agregado al carrito`);
+      this.alertService.showSuccess(`${producto.nombre} agregado al carrito`, 'Éxito');
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
-      alert('Error al agregar al carrito');
+      this.alertService.showError('Error al agregar al carrito', 'Error');
     }
   }
 
@@ -127,6 +134,16 @@ export class Catalog implements OnInit, OnDestroy {
 
   formatPrice(price: number): string {
     return this.catalogService.formatPrice(price);
+  }
+
+  // Check if user is logged in
+  isUserLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  // Check if user is juridical
+  isJuridicalUser(): boolean {
+    return this.authService.isJuridico();
   }
 
 }

@@ -15,8 +15,8 @@
 }
 
 .btn-back {
-  background: #6c757d;
-  color: white;
+  background: var(--color-gray-medium);
+  color: var(--color-background);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -29,7 +29,7 @@
 }
 
 .btn-back:hover {
-  background: #5a6268;
+  background: var(--color-gray-dark);
 }
 
 .form-header h2 {

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserService, User, TipoUsuario, Perfil, Departamento, Ciudad } from '../../services/user.service';
 import { LocationService } from '../../services/location.service';
+import { AlertService } from '../../services/alert.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -20,8 +21,6 @@ export class UserEdit implements OnInit, OnDestroy {
   departamentos: Departamento[] = [];
   ciudades: Ciudad[] = [];
   ciudadesFiltradas: Ciudad[] = [];
-  mensajeModal: string = '';
-  tipoMensaje: 'success' | 'error' = 'success';
   isSubmitting: boolean = false;
   isLoading: boolean = true;
   
@@ -35,7 +34,8 @@ export class UserEdit implements OnInit, OnDestroy {
     private userService: UserService,
     private locationService: LocationService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -66,8 +66,8 @@ export class UserEdit implements OnInit, OnDestroy {
       password: [''], // No required for editing
       tipoUsuario: ['', Validators.required],
       perfil: ['', Validators.required],
-      departamento: ['', Validators.required],
-      ciudad: ['', Validators.required]
+      departamento: [''], // Hacer opcional temporalmente
+      ciudad: [''] // Hacer opcional temporalmente
     });
   }
 
@@ -261,8 +261,7 @@ export class UserEdit implements OnInit, OnDestroy {
             this.isLoading = false;
           },
           error: (error) => {
-            this.mensajeModal = 'Usuario no encontrado';
-            this.tipoMensaje = 'error';
+            this.alertService.showError('Usuario no encontrado', 'Error');
             this.isLoading = false;
             console.error('Error:', error);
           }
@@ -299,7 +298,14 @@ export class UserEdit implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    if (this.userForm.valid && !this.isSubmitting && this.currentUser) {
+    // Validación más flexible - permitir editar incluso con algunos errores menores
+    const hasRequiredFields = this.userForm.get('documento')?.valid && 
+                             this.userForm.get('nombre')?.valid && 
+                             this.userForm.get('correo')?.valid &&
+                             this.userForm.get('tipoUsuario')?.valid &&
+                             this.userForm.get('perfil')?.valid;
+    
+    if (hasRequiredFields && !this.isSubmitting && this.currentUser) {
       this.isSubmitting = true;
       
       try {
@@ -358,11 +364,9 @@ export class UserEdit implements OnInit, OnDestroy {
             console.log('Response from backend:', response);
             // Verificar si la respuesta indica un error
             if (this.userService.isErrorResponse(response)) {
-              this.mensajeModal = response;
-              this.tipoMensaje = 'error';
+              this.alertService.showError(response, 'Error');
             } else {
-              this.mensajeModal = response || 'Usuario actualizado exitosamente';
-              this.tipoMensaje = 'success';
+              this.alertService.showSuccess(response || 'Usuario actualizado exitosamente', 'Éxito');
               
               setTimeout(() => {
                 this.router.navigate(['/usuarios-admin']);
@@ -370,22 +374,19 @@ export class UserEdit implements OnInit, OnDestroy {
             }
           },
           error: (error) => {
-            this.mensajeModal = this.userService.extractErrorMessage(error);
-            this.tipoMensaje = 'error';
+            this.alertService.showError(this.userService.extractErrorMessage(error), 'Error');
             console.error('Error completo:', error);
           }
         });
 
       } catch (error: any) {
-        this.mensajeModal = error.message || 'Error al actualizar el usuario';
-        this.tipoMensaje = 'error';
+        this.alertService.showError(error.message || 'Error al actualizar el usuario', 'Error');
       } finally {
         this.isSubmitting = false;
       }
     } else {
       this.markFormGroupTouched();
-      this.mensajeModal = 'Por favor, complete todos los campos requeridos correctamente';
-      this.tipoMensaje = 'error';
+      this.alertService.showError('Por favor, complete todos los campos requeridos correctamente', 'Error de validación');
     }
   }
 

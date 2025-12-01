@@ -98,8 +98,8 @@
           <td>{{ user.correo || 'Sin correo' }}</td>
           <td>{{ user.telefono || 'Sin teléfono' }}</td>
           <td>
-            <span class="user-type-badge" [ngClass]="getUserTypeClass(user.tipoUsuario?.nombre || 'Sin tipo')">
-              {{ user.tipoUsuario?.nombre || 'Sin tipo' }}
+            <span class="user-type-badge" [ngClass]="getUserTypeClass(user.tipoUsuario.nombre || 'Sin tipo')">
+              {{ user.tipoUsuario.nombre || 'Sin tipo' }}
             </span>
           </td>
           <td>{{ user.perfil ? user.perfil.nombrePerfil : 'Sin perfil' }}</td>

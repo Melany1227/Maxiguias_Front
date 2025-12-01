@@ -78,21 +78,26 @@
             </div>
             
             <div class="precios-grid">
-              <div class="precio-item">
-                <span class="precio-label">Público:</span>
+              <!-- Precio público visible para usuarios no logueados o no jurídicos -->
+              <div class="precio-item" *ngIf="!isUserLoggedIn() || !isJuridicalUser()">
+                <span class="precio-label">Precio:</span>
                 <span class="precio-publico">{{ formatPrice(terminado.precioPublico) }}</span>
               </div>
-              <div class="precio-item">
-                <span class="precio-label">Por Mayor:</span>
-                <span class="precio-mayor">{{ formatPrice(terminado.precioPorMayor) }}</span>
-              </div>
-              <div class="precio-item">
-                <span class="precio-label">Por Encargo:</span>
-                <span class="precio-encargo">{{ formatPrice(terminado.precioPorEncargo) }}</span>
-              </div>
+              
+              <!-- Precios especiales solo para usuarios logueados -->
+              <ng-container *ngIf="isUserLoggedIn()">
+                <div class="precio-item">
+                  <span class="precio-label">Por Mayor:</span>
+                  <span class="precio-mayor">{{ formatPrice(terminado.precioPorMayor) }}</span>
+                </div>
+                <div class="precio-item">
+                  <span class="precio-label">Por Encargo:</span>
+                  <span class="precio-encargo">{{ formatPrice(terminado.precioPorEncargo) }}</span>
+                </div>
+              </ng-container>
             </div>
             
-            <div class="terminado-actions">
+            <div class="terminado-actions" *ngIf="isUserLoggedIn()">
               <button 
                 class="btn-add-cart-terminado" 
                 (click)="addToCart(producto, terminado)">
